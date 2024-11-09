@@ -16,7 +16,7 @@
     <script>
         const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
         const supabaseKey = process.env.REACT_APP_ANON_KEY;
-        const supabase = createClient(supabaseUrl, supabaseKey); // Store in window object
+        const supabase = createClient(supabaseUrl, supabaseKey);
     </script>
 
     <!-- Your existing styles here -->
@@ -649,7 +649,7 @@
                 const roomName = document.getElementById('newMeetingName').value;
                 const password = document.getElementById('newRoomPassword').value;
 
-                const { data, error } = await window.supabase
+                const { data, error } = await supabase
                     .from('rooms')
                     .insert([{
                         name: roomName,
@@ -677,7 +677,7 @@
                 const roomName = document.getElementById('meetingName').value;
                 const password = document.getElementById('roomPassword').value;
 
-                const { data, error } = await window.supabase
+                const { data, error } = await supabase
                     .from('rooms')
                     .select()
                     .eq('name', roomName)
@@ -932,13 +932,13 @@
             
             for (const file of files) {
                 try {
-                    const { data, error } = await window.supabase.storage
+                    const { data, error } = await supabase.storage
                         .from('shared-files')
                         .upload(`${roomId}/${file.name}`, file);
 
                     if (error) throw error;
 
-                    const { data: { publicUrl } } = window.supabase.storage
+                    const { data: { publicUrl } } = supabase.storage
                         .from('shared-files')
                         .getPublicUrl(`${roomId}/${file.name}`);
 
