@@ -341,7 +341,7 @@
                         <input type="password" id="newRoomPassword" placeholder="Room Password" required>
                     </div>
                     <button type="submit">Create Room</button>
-                    <button type="button" onclick="showInitialButtons()" class="back-btn">Back</button>
+                    <button type="button" onclick="showInitialButtons()">Back</button>
                 </form>
             </div>
 
@@ -359,7 +359,7 @@
                         <input type="password" id="roomPassword" placeholder="Room Password" required>
                     </div>
                     <button type="submit">Join Room</button>
-                    <button type="button" onclick="showInitialButtons()" class="back-btn">Back</button>
+                    <button type="button" onclick="showInitialButtons()">Back</button>
                 </form>
             </div>
         </div>
@@ -918,16 +918,19 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
         // UI State Management
         function showCreateRoomForm() {
+            console.log('Showing create room form'); // Debug log
             document.getElementById('initialButtons').style.display = 'none';
             document.getElementById('createRoomForm').style.display = 'block';
         }
 
         function showJoinRoomForm() {
+            console.log('Showing join room form'); // Debug log
             document.getElementById('initialButtons').style.display = 'none';
             document.getElementById('joinRoomForm').style.display = 'block';
         }
 
         function showInitialButtons() {
+            console.log('Showing initial buttons'); // Debug log
             document.getElementById('initialButtons').style.display = 'flex';
             document.getElementById('createRoomForm').style.display = 'none';
             document.getElementById('joinRoomForm').style.display = 'none';
@@ -942,7 +945,17 @@ const supabase = createClient(supabaseUrl, supabaseKey)
         }
 
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click event listeners
+            document.querySelector('[onclick="showCreateRoomForm()"]')?.addEventListener('click', showCreateRoomForm);
+            document.querySelector('[onclick="showJoinRoomForm()"]')?.addEventListener('click', showJoinRoomForm);
+            
+            // Initialize Supabase channels
+            initializeSupabase().catch(error => {
+                console.error('Failed to initialize Supabase:', error);
+                showError('Failed to initialize: ' + error.message);
+            });
+        });
     </script>
 </body>
 </html>
