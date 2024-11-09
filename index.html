@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arcane Watch Party</title>
     
-    <!-- Supabase JS -->
+    <!-- External Dependencies -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
-    <!-- Font Awesome for icons -->
+    <script src="https://unpkg.com/simple-peer@9.11.0/simplepeer.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 
-    <!-- Initialize Supabase First -->
+    <!-- Initialize Supabase -->
     <script>
-        // Initialize Supabase client
-        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co'
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcXhsaWxra3FuaGZzbml4dHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjI4MDYsImV4cCI6MjA0NjczODgwNn0.XAGbRLnbpfitg9QjGLNoee1fxp57Li4ExB4_BxwUvM4'
-        const supabase = createClient(supabaseUrl, supabaseKey)
+        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcXhsaWxra3FuaGZzbml4dHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjI4MDYsImV4cCI6MjA0NjczODgwNn0.XAGbRLnbpfitg9QjGLNoee1fxp57Li4ExB4_BxwUvM4';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
 
     <style>
@@ -50,6 +50,69 @@
             line-height: 1.6;
         }
 
+        /* Initial Forms */
+        .initial-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: var(--spacing-lg);
+            background: var(--background-color);
+        }
+
+        .forms-wrapper {
+            background: var(--overlay-bg);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+        }
+
+        .button-group button {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: none;
+            border-radius: var(--border-radius-md);
+            background: var(--primary-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .button-group button:hover {
+            transform: scale(1.05);
+        }
+
+        .form-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .animated-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: var(--spacing-sm);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+        }
+
         /* Layout */
         .container {
             display: grid;
@@ -59,27 +122,6 @@
             height: 100vh;
             max-width: 1800px;
             margin: 0 auto;
-        }
-
-        /* User Section Styles */
-        .user-section {
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-lg);
-        }
-
-        .user-list {
-            margin-top: var(--spacing-md);
-        }
-
-        .user-item {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            background: rgba(255, 255, 255, 0.1);
-            margin-bottom: var(--spacing-xs);
         }
 
         /* Video Section Styles */
@@ -106,12 +148,12 @@
             object-fit: contain;
         }
 
-        /* Video Controls */
+        /* Playback Controls */
         .playback-controls {
             background: var(--overlay-bg);
             border-radius: var(--border-radius-lg);
             padding: var(--spacing-md);
-            display: none;
+            display: flex;
             flex-direction: column;
             gap: var(--spacing-sm);
         }
@@ -138,38 +180,6 @@
         .control-btn:hover {
             background: var(--accent-color);
             transform: scale(1.05);
-        }
-
-        /* Video Grid */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-md);
-        }
-
-        .video-container {
-            position: relative;
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: var(--border-radius-md);
-            overflow: hidden;
-        }
-
-        .video-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .name-tag {
-            position: absolute;
-            bottom: var(--spacing-sm);
-            left: var(--spacing-sm);
-            background: var(--overlay-bg);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            font-size: 12px;
         }
 
         /* Chat Section */
@@ -260,6 +270,7 @@
             padding: var(--spacing-sm);
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
+            margin-top: var(--spacing-sm);
         }
 
         .reaction-btn {
@@ -275,46 +286,15 @@
             transform: scale(1.2);
         }
 
-        .floating-reaction {
-            position: absolute;
-            font-size: 30px;
-            pointer-events: none;
-            animation: floatUp 2s ease-out forwards;
-        }
-
-        /* Modals */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--overlay-bg);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: #111;
-            margin: 10% auto;
-            padding: var(--spacing-lg);
-            width: 90%;
-            max-width: 500px;
-            border-radius: var(--border-radius-lg);
-            position: relative;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
-        }
-
         /* Animations */
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         @keyframes floatUp {
-            0% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) scale(1.5);
-                opacity: 0;
-            }
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
         }
 
         /* Responsive Design */
@@ -344,29 +324,14 @@
             }
         }
     </style>
-
-    <!-- Add new dependencies -->
-    <script src="https://unpkg.com/simple-peer@9.11.0/simplepeer.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 </head>
 <body>
-    <div class="character-images">
-        <img src="images/characters/jinx.png" alt="" class="character jinx">
-        <img src="images/characters/vi.jpg" alt="" class="character vi">
-        <img src="images/characters/caitlyn.jpg" alt="" class="character caitlyn">
-        <img src="images/characters/silco.webp" alt="" class="character silco">
-    </div>
-
-    <!-- Login Container -->
-    <div class="login-container" id="loginContainer">
-        <div class="login-form">
-            <h2>Arcane Watch Party</h2>
-            
-            <!-- Initial Buttons -->
-            <div id="initialButtons" class="fade-in">
-                <button class="pulse" onclick="showCreateRoomForm()">Create Room</button>
-                <button class="pulse" onclick="showJoinRoomForm()">Join Room</button>
+    <!-- Initial Forms Container -->
+    <div id="initialForms" class="initial-container">
+        <div class="forms-wrapper">
+            <div id="initialButtons" class="button-group">
+                <button onclick="showCreateRoomForm()">Create Room</button>
+                <button onclick="showJoinRoomForm()">Join Room</button>
             </div>
 
             <!-- Create Room Form -->
@@ -377,10 +342,10 @@
                         <input type="text" id="newUserName" placeholder="Your Display Name" required>
                     </div>
                     <div class="input-group">
-                        <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required>
+                        <input type="text" id="newMeetingName" placeholder="Meeting Name" required>
                     </div>
                     <div class="input-group">
-                        <input type="password" id="newRoomPassword" placeholder="Set Room Password" required>
+                        <input type="password" id="newRoomPassword" placeholder="Room Password" required>
                     </div>
                     <button type="submit">Create Room</button>
                     <button type="button" onclick="showInitialButtons()" class="back-btn">Back</button>
@@ -408,8 +373,8 @@
     </div>
 
     <!-- Main Container -->
-    <div class="container">
-        <!-- Updated User Section -->
+    <div class="container" style="display: none;">
+        <!-- User Section -->
         <div class="user-section">
             <h3>Users in Room</h3>
             <div id="userList" class="user-list"></div>
@@ -424,7 +389,7 @@
             </div>
         </div>
 
-        <!-- Updated Video Section -->
+        <!-- Video Section -->
         <div class="video-section">
             <!-- Theme Selector -->
             <div class="theme-selector">
@@ -452,7 +417,7 @@
             </div>
 
             <!-- Enhanced Playback Controls -->
-            <div class="playback-controls" style="display: none;">
+            <div class="playback-controls">
                 <div class="primary-controls">
                     <button onclick="syncPlay()" class="control-btn">
                         <i class="fas fa-play"></i>
@@ -492,721 +457,491 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Reaction Bar -->
-            <div class="reaction-bar"></div>
         </div>
 
-        <!-- Updated Chat Section -->
+        <!-- Chat Section -->
         <div class="chat-section">
             <div class="chat-tabs">
-                <button onclick="switchTab('chat')" class="active">Chat</button>
-                <button onclick="switchTab('files')">Shared Files</button>
+                <button class="active">Chat</button>
+                <button>Files</button>
             </div>
-
-            <div id="chatBox" class="chat-box tab-content active"></div>
-            <div id="filesBox" class="files-box tab-content">
-                <div class="file-list"></div>
-                <div class="upload-area" ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Drag & Drop files here</p>
-                    <input type="file" id="fileInput" onchange="handleFileShare(event)" multiple>
-                    <button onclick="document.getElementById('fileInput').click()">Select Files</button>
-                </div>
+            <div class="chat-box">
+                <!-- Chat messages will be added here -->
             </div>
-
-            <div class="message-input-container">
-                <button onclick="toggleEmojiPicker()" class="emoji-button">😊</button>
-                <div id="emojiPicker" class="emoji-picker" style="display: none;"></div>
-                <input type="text" id="messageInput" placeholder="Type a message...">
-                <button onclick="sendMessage()">Send</button>
+            <div class="files-box">
+                <!-- Files will be added here -->
             </div>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="roomSettingsModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Room Settings</h2>
-            <div class="settings-form">
-                <div class="input-group">
-                    <label>Room Password</label>
-                    <input type="password" id="newRoomPassword">
-                    <button onclick="roomFeatures.setRoomPassword(document.getElementById('newRoomPassword').value)">
-                        Update Password
-                    </button>
-                </div>
-                <div class="input-group">
-                    <label>Room Access</label>
-                    <select id="roomAccess">
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="analyticsModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Room Analytics</h2>
-            <div id="analyticsContent"></div>
-        </div>
-    </div>
-
-    <!-- Additional CSS -->
-    <style>
-        /* Section Styles */
-        .user-section, .video-section, .chat-section {
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        /* User Section */
-        .user-list {
-            margin-top: 15px;
-        }
-
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Video Section */
-        .video-player {
-            width: 100%;
-            aspect-ratio: 16/9;
-            background: #000;
-            margin: 15px 0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .playback-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-        }
-
-        /* Chat Section */
-        .chat-box {
-            height: calc(100% - 60px);
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .message {
-            margin: 5px 0;
-            padding: 8px 12px;
-            border-radius: 15px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-
-        .sent {
-            background: #ff0000;
-            margin-left: auto;
-        }
-
-        .received {
-            background: #333;
-            margin-right: auto;
-        }
-
-        .message-input-container {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        /* Emoji Picker */
-        .emoji-picker {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 5px;
-            padding: 10px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 5px;
-        }
-
-        .emoji-picker span {
-            cursor: pointer;
-            padding: 5px;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .emoji-picker span:hover {
-            transform: scale(1.2);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .form-slide {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr 2fr;
-            }
-            .user-section {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            .chat-section {
-                height: 300px;
-            }
-        }
-    </style>
-
-    <!-- Add this after your closing </style> tag and before </body>-->
+    <!-- Main JavaScript -->
     <script>
-    // Global Variables
-    let roomId;
-    let userName;
-    let isAdmin = false;
-    let videoElement = null;
+        // Global Variables
+        let roomId;
+        let userName;
+        let isAdmin = false;
+        let peerConnections = {};
+        let screenStream = null;
+        let videoElement = null;
+        let isScreenSharing = false;
+        let currentTheme = 'default';
+        let chatChannel;
+        let videoStateChannel;
 
-    // Video Controls Object
-    const videoControls = {
-        setPlaybackSpeed(speed) {
-            if (!videoElement) return;
-            videoElement.playbackRate = parseFloat(speed);
-            broadcastVideoState('speed', speed);
-        },
-        
-        setVolume(volume) {
-            if (!videoElement) return;
-            videoElement.volume = parseFloat(volume);
-        },
-        
-        toggleMute() {
-            if (!videoElement) return;
-            videoElement.muted = !videoElement.muted;
-        },
-        
-        takeSnapshot() {
-            if (!videoElement) return;
-            const canvas = document.createElement('canvas');
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(videoElement, 0, 0);
-            
-            // Create download link
-            const link = document.createElement('a');
-            link.download = 'snapshot.png';
-            link.href = canvas.toDataURL();
-            link.click();
+        // Theme Configuration
+        const themes = {
+            default: {
+                primary: '#ff0000',
+                background: '#000000',
+                text: '#ffffff'
+            },
+            light: {
+                primary: '#ff4444',
+                background: '#ffffff',
+                text: '#000000'
+            },
+            neon: {
+                primary: '#00ff00',
+                background: '#111111',
+                text: '#00ff00'
+            }
+        };
+
+        // Initialize App
+        async function initializeApp() {
+            try {
+                videoElement = document.createElement('video');
+                videoElement.id = 'mainVideo';
+                document.getElementById('videoPlayer').appendChild(videoElement);
+                
+                setupVideoEventListeners();
+                await initializeSupabase();
+                setupEventListeners();
+                initializeEmojiPicker();
+                
+                console.log('App initialized successfully');
+            } catch (error) {
+                showError('Initialization failed: ' + error.message);
+            }
         }
-    };
 
-    // Initialize all features
-    async function initializeApp() {
-        try {
-            videoElement = document.createElement('video');
-            videoElement.id = 'mainVideo';
-            document.getElementById('videoPlayer').appendChild(videoElement);
-            
-            // Add event listeners
+        // Supabase Initialization
+        async function initializeSupabase() {
+            try {
+                // Set up real-time subscriptions
+                chatChannel = supabase
+                    .channel('chat')
+                    .on('broadcast', { event: 'message' }, handleNewMessage)
+                    .subscribe();
+
+                videoStateChannel = supabase
+                    .channel('video_state')
+                    .on('broadcast', { event: 'state_change' }, handleVideoStateChange)
+                    .subscribe();
+
+                console.log('Supabase channels initialized');
+            } catch (error) {
+                console.error('Supabase initialization failed:', error);
+                throw error;
+            }
+        }
+
+        // Event Listeners Setup
+        function setupVideoEventListeners() {
             videoElement.addEventListener('loadedmetadata', () => {
                 document.getElementById('duration').textContent = formatTime(videoElement.duration);
                 document.querySelector('.playback-controls').style.display = 'flex';
             });
-            
+
             videoElement.addEventListener('timeupdate', () => {
                 document.getElementById('currentTime').textContent = formatTime(videoElement.currentTime);
                 document.getElementById('timelineSlider').value = 
                     (videoElement.currentTime / videoElement.duration) * 100;
             });
 
-            await initializeSupabase();
-            initializeVideoChat();
-            initializeChat();
-            setupReactions();
-            setupFileSharing();
-            setupEventListeners();
-            initializeTheme();
-        } catch (error) {
-            showError('Initialization failed: ' + error.message);
-        }
-    }
-
-    // Video Chat Implementation
-    async function initializeVideoChat() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
+            document.getElementById('timelineSlider').addEventListener('input', (e) => {
+                const time = (videoElement.duration * e.target.value) / 100;
+                videoElement.currentTime = time;
+                broadcastVideoState('seek', time);
             });
-            
-            addVideoStream(stream, userName, true);
-            setupPeerConnections(stream);
-        } catch (error) {
-            console.error('Failed to access camera:', error);
-            showError('Camera access denied');
         }
-    }
 
-    function setupPeerConnections(stream) {
-        supabase
-            .channel('video-users')
-            .on('presence', { event: 'join' }, ({ key, newPresence }) => {
-                if (key !== userName) {
-                    createPeerConnection(key, stream);
-                }
-            })
-            .subscribe();
-    }
-
-    // Screen Sharing Implementation
-    async function startScreenShare() {
-        try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
-                video: { cursor: "always" },
-                audio: { echoCancellation: true, noiseSuppression: true }
-            });
-
-            videoElement = document.createElement('video');
-            videoElement.id = 'sharedScreen';
-            videoElement.autoplay = true;
-            
-            const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.innerHTML = '';
-            videoPlayer.appendChild(videoElement);
-            videoElement.srcObject = screenStream;
-            
-            toggleScreenShareControls(true);
-            broadcastScreenShareState('started');
-            
-            screenStream.getVideoTracks()[0].onended = () => stopScreenShare();
-        } catch (error) {
-            showError('Screen sharing failed: ' + error.message);
-        }
-    }
-
-    // File Sharing Implementation
-    function setupFileSharing() {
-        const dropZone = document.querySelector('.upload-area');
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('drag-over');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('drag-over');
-        });
-        
-        dropZone.addEventListener('drop', handleFileDrop);
-    }
-
-    async function handleFileShare(event) {
-        const files = event.target.files || event.dataTransfer.files;
-        
-        for (const file of files) {
-            const progressBar = createProgressBar(file.name);
-            
+        // Room Management
+        async function handleCreateRoom(event) {
+            event.preventDefault();
             try {
-                const { data, error } = await supabase.storage
-                    .from('shared-files')
-                    .upload(`${roomId}/${file.name}`, file, {
-                        onProgress: (progress) => {
-                            updateProgressBar(progressBar, progress);
-                        }
-                    });
+                userName = document.getElementById('newUserName').value;
+                const roomName = document.getElementById('newMeetingName').value;
+                const password = document.getElementById('newRoomPassword').value;
+
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .insert([{
+                        name: roomName,
+                        password: password,
+                        admin_name: userName,
+                        created_at: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
 
                 if (error) throw error;
-                
-                await sendFileMessage(data.path, file.name);
-                removeProgressBar(progressBar);
+
+                roomId = data.id;
+                isAdmin = true;
+                enterRoom();
             } catch (error) {
-                showError(`Failed to upload ${file.name}`);
-                removeProgressBar(progressBar);
+                showError('Failed to create room: ' + error.message);
             }
         }
-    }
 
-    // Chat Implementation
-    function setupChat() {
-        const messageInput = document.getElementById('messageInput');
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+        async function handleJoinRoom(event) {
+            event.preventDefault();
+            try {
+                userName = document.getElementById('userName').value;
+                const roomName = document.getElementById('meetingName').value;
+                const password = document.getElementById('roomPassword').value;
+
+                const { data, error } = await supabase
+                    .from('rooms')
+                    .select()
+                    .eq('name', roomName)
+                    .eq('password', password)
+                    .single();
+
+                if (error) throw new Error('Invalid room name or password');
+
+                roomId = data.id;
+                isAdmin = data.admin_name === userName;
+                enterRoom();
+            } catch (error) {
+                showError('Failed to join room: ' + error.message);
             }
-        });
-    }
-
-    async function sendMessage(content, type = 'text') {
-        if (!content && type === 'text') {
-            content = document.getElementById('messageInput').value.trim();
-            if (!content) return;
         }
 
-        try {
-            const { error } = await supabase
-                .from('messages')
-                .insert([{
-                    room_id: roomId,
-                    sender: userName,
-                    content: content,
-                    type: type
-                }]);
-
-            if (error) throw error;
+        // Video Controls
+        const videoControls = {
+            setPlaybackSpeed(speed) {
+                if (!videoElement) return;
+                videoElement.playbackRate = parseFloat(speed);
+                broadcastVideoState('speed', speed);
+            },
             
-            if (type === 'text') {
-                document.getElementById('messageInput').value = '';
+            setVolume(volume) {
+                if (!videoElement) return;
+                videoElement.volume = parseFloat(volume);
+            },
+            
+            toggleMute() {
+                if (!videoElement) return;
+                videoElement.muted = !videoElement.muted;
+            },
+            
+            takeSnapshot() {
+                if (!videoElement) return;
+                const canvas = document.createElement('canvas');
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(videoElement, 0, 0);
+                
+                const link = document.createElement('a');
+                link.download = 'snapshot.png';
+                link.href = canvas.toDataURL();
+                link.click();
             }
-        } catch (error) {
-            showError('Failed to send message');
+        };
+
+        // Video State Management
+        async function broadcastVideoState(action, value = null) {
+            try {
+                await videoStateChannel.send({
+                    type: 'broadcast',
+                    event: 'state_change',
+                    payload: {
+                        action,
+                        value,
+                        sender: userName
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to broadcast video state:', error);
+            }
         }
-    }
 
-    // Reactions Implementation
-    function setupReactions() {
-        const reactions = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-        const reactionBar = document.querySelector('.reaction-bar');
-        
-        reactions.forEach(emoji => {
-            const button = document.createElement('button');
-            button.className = 'reaction-btn';
-            button.textContent = emoji;
-            button.onclick = () => sendReaction(emoji);
-            reactionBar.appendChild(button);
-        });
-    }
+        function handleVideoStateChange(payload) {
+            const { action, value, sender } = payload;
+            if (sender === userName) return;
 
-    function sendReaction(emoji) {
-        createFloatingReaction(emoji);
-        broadcastReaction(emoji);
-    }
-
-    // Theme Implementation
-    function initializeTheme() {
-        const savedTheme = localStorage.getItem('theme') || 'default';
-        applyTheme(savedTheme);
-    }
-
-    function applyTheme(themeName) {
-        const theme = themes[themeName];
-        if (!theme) return;
-        
-        Object.entries(theme).forEach(([property, value]) => {
-            document.documentElement.style.setProperty(`--${property}`, value);
-        });
-        
-        currentTheme = themeName;
-        localStorage.setItem('theme', themeName);
-    }
-
-    // Utility Functions
-    function showError(message) {
-        Toastify({
-            text: message,
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            backgroundColor: "linear-gradient(to right, #ff0000, #ff5555)",
-            stopOnFocus: true
-        }).showToast();
-    }
-
-    function createProgressBar(fileName) {
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'progress-container';
-        progressContainer.innerHTML = `
-            <span>${fileName}</span>
-            <div class="progress-bar">
-                <div class="progress-bar-fill"></div>
-            </div>
-        `;
-        document.querySelector('.file-list').appendChild(progressContainer);
-        return progressContainer;
-    }
-
-    // Helper function to format time
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        seconds = Math.floor(seconds % 60);
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', initializeApp);
-
-    // UI Control Functions
-    function showCreateRoomForm() {
-        document.getElementById('initialButtons').style.display = 'none';
-        document.getElementById('createRoomForm').style.display = 'block';
-    }
-
-    function showJoinRoomForm() {
-        document.getElementById('initialButtons').style.display = 'none';
-        document.getElementById('joinRoomForm').style.display = 'block';
-    }
-
-    function showInitialButtons() {
-        document.getElementById('initialButtons').style.display = 'block';
-        document.getElementById('createRoomForm').style.display = 'none';
-        document.getElementById('joinRoomForm').style.display = 'none';
-    }
-
-    // Room Control Functions
-    async function handleCreateRoom(event) {
-        event.preventDefault();
-        const userName = document.getElementById('newUserName').value;
-        const roomName = document.getElementById('newMeetingName').value;
-        const password = document.getElementById('newRoomPassword').value;
-
-        try {
-            const { data, error } = await supabase
-                .from('rooms')
-                .insert([
-                    { name: roomName, password: password, admin_name: userName }
-                ])
-                .select()
-                .single();
-
-            if (error) throw error;
-            
-            // Store room info and enter
-            roomId = data.id;
-            isAdmin = true;
-            enterRoom();
-        } catch (error) {
-            showError('Failed to create room: ' + error.message);
+            switch (action) {
+                case 'play':
+                    videoElement?.play();
+                    break;
+                case 'pause':
+                    videoElement?.pause();
+                    break;
+                case 'seek':
+                    if (videoElement && value !== null) {
+                        videoElement.currentTime = value;
+                    }
+                    break;
+                case 'speed':
+                    if (videoElement && value !== null) {
+                        videoElement.playbackRate = value;
+                    }
+                    break;
+            }
         }
-    }
 
-    async function handleJoinRoom(event) {
-        event.preventDefault();
-        const userName = document.getElementById('userName').value;
-        const roomName = document.getElementById('meetingName').value;
-        const password = document.getElementById('roomPassword').value;
-
-        try {
-            const { data, error } = await supabase
-                .from ('rooms')
-                .select()
-                .eq('name', roomName)
-                .eq('password', password)
-                .single();
-
-            if (error) throw error;
-            
-            // Store room info and enter
-            roomId = data.id;
-            isAdmin = false;
-            enterRoom();
-        } catch (error) {
-            showError('Failed to join room: ' + error.message);
+        // Screen Sharing
+        async function startScreenShare() {
+            try {
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: true
+                });
+                videoElement.srcObject = screenStream;
+                document.getElementById('startScreenShare').style.display = 'none';
+                document.getElementById('stopScreenShare').style.display = 'block';
+                isScreenSharing = true;
+            } catch (error) {
+                showError('Failed to start screen sharing: ' + error.message);
+            }
         }
-    }
 
-    // Video Control Functions
-    function syncPlay() {
-        if (videoElement) {
-            videoElement.play();
-            broadcastVideoState('play');
+        function stopScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+                videoElement.srcObject = null;
+                document.getElementById('startScreenShare').style.display = 'block';
+                document.getElementById('stopScreenShare').style.display = 'none';
+                isScreenSharing = false;
+            }
         }
-    }
 
-    function syncPause() {
-        if (videoElement) {
-            videoElement.pause();
-            broadcastVideoState('pause');
+        // Chat and File Sharing Functions
+        async function sendMessage(content = null, type = 'text') {
+            try {
+                const messageContent = content || document.getElementById('messageInput').value.trim();
+                if (!messageContent) return;
+
+                await chatChannel.send({
+                    type: 'broadcast',
+                    event: 'message',
+                    payload: {
+                        type,
+                        content: messageContent,
+                        sender: userName,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+
+                if (type === 'text') {
+                    document.getElementById('messageInput').value = '';
+                }
+            } catch (error) {
+                showError('Failed to send message: ' + error.message);
+            }
         }
-    }
 
-    function syncSeekBackward() {
-        if (videoElement) {
-            videoElement.currentTime -= 10;
-            broadcastVideoState('seek', videoElement.currentTime);
+        function handleNewMessage(payload) {
+            const { type, content, sender, timestamp } = payload;
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender === userName ? 'sent' : 'received'}`;
+
+            switch (type) {
+                case 'text':
+                    messageDiv.innerHTML = `
+                        <span class="sender">${sender}</span>
+                        <span class="content">${escapeHtml(content)}</span>
+                        <span class="timestamp">${formatTimestamp(timestamp)}</span>
+                    `;
+                    break;
+                case 'file':
+                    messageDiv.innerHTML = `
+                        <span class="sender">${sender}</span>
+                        <a href="${content.url}" target="_blank" class="file-link">
+                            📎 ${escapeHtml(content.name)} (${formatFileSize(content.size)})
+                        </a>
+                        <span class="timestamp">${formatTimestamp(timestamp)}</span>
+                    `;
+                    break;
+                case 'reaction':
+                    messageDiv.innerHTML = `
+                        <span class="reaction-message">
+                            ${sender} reacted with ${content}
+                        </span>
+                    `;
+                    break;
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-    }
 
-    function syncSeekForward() {
-        if (videoElement) {
-            videoElement.currentTime += 10;
-            broadcastVideoState('seek', videoElement.currentTime);
+        // File Handling
+        async function handleFileShare(event) {
+            const files = event.target.files || event.dataTransfer.files;
+            for (const file of files) {
+                try {
+                    const { data, error } = await supabase.storage
+                        .from('shared-files')
+                        .upload(`${roomId}/${file.name}`, file);
+
+                    if (error) throw error;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('shared-files')
+                        .getPublicUrl(`${roomId}/${file.name}`);
+
+                    await sendMessage({
+                        url: publicUrl,
+                        name: file.name,
+                        size: file.size
+                    }, 'file');
+
+                } catch (error) {
+                    showError(`Failed to upload ${file.name}: ${error.message}`);
+                }
+            }
         }
-    }
 
-    async function broadcastVideoState(action, value = null) {
-        try {
-            await supabase
-                .from('video_states')
-                .insert([{
-                    room_id: roomId,
-                    action: action,
-                    value: value,
-                    sender: userName
-                }]);
-        } catch (error) {
-            console.error('Failed to broadcast video state:', error);
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('drag-over');
         }
-    }
 
-    // Add this after your global variables and before other functions
-    async function initializeSupabase() {
-        try {
-            // Set up real-time subscriptions
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            // Subscribe to room changes
-            const roomChannel = supabase
-                .channel('room_changes')
-                .on('postgres_changes', {
-                    event: '*',
-                    schema: 'public',
-                    table: 'rooms'
-                }, handleRoomChange)
-                .subscribe();
-
-            // Subscribe to video state changes
-            const videoChannel = supabase
-                .channel('video_states')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'video_states'
-                }, handleVideoStateChange)
-                .subscribe();
-
-            // Subscribe to chat messages
-            const chatChannel = supabase
-                .channel('chat_messages')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'messages'
-                }, handleNewMessage)
-                .subscribe();
-
-            console.log('Supabase initialized successfully');
-        } catch (error) {
-            console.error('Failed to initialize Supabase:', error);
-            throw new Error('Failed to initialize Supabase: ' + error.message);
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('drag-over');
         }
-    }
 
-    // Add these handler functions
-    async function handleRoomChange(payload) {
-        const { eventType, new: newRoom, old: oldRoom } = payload;
-        
-        if (eventType === 'DELETE' && oldRoom.id === roomId) {
-            // Room was deleted
-            showError('Room has been deleted');
-            window.location.reload();
-        } else if (eventType === 'UPDATE' && newRoom.id === roomId) {
-            // Room was updated
-            // Handle room updates (e.g., password change, settings change)
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            handleFileShare(event);
+        }
+
+        // Room Settings and Analytics
+        async function updateRoomSettings(settings) {
+            try {
+                const { error } = await supabase
+                    .from('rooms')
+                    .update(settings)
+                    .eq('id', roomId);
+
+                if (error) throw error;
+                showSuccess('Room settings updated successfully');
+            } catch (error) {
+                showError('Failed to update room settings: ' + error.message);
+            }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const { data, error } = await supabase
+                    .from('room_analytics')
+                    .select('*')
+                    .eq('room_id', roomId);
+
+                if (error) throw error;
+
+                const analyticsContent = document.getElementById('analyticsContent');
+                analyticsContent.innerHTML = generateAnalyticsHTML(data);
+            } catch (error) {
+                showError('Failed to load analytics: ' + error.message);
+            }
+        }
+
+        // Utility Functions
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            seconds = Math.floor(seconds % 60);
+            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function formatTimestamp(timestamp) {
+            return new Date(timestamp).toLocaleTimeString();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function showError(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#ff4444",
+            }).showToast();
+        }
+
+        function showSuccess(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#44ff44",
+            }).showToast();
+        }
+
+        // Theme Management
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) return;
+
+            document.documentElement.style.setProperty('--primary-color', theme.primary);
+            document.documentElement.style.setProperty('--background-color', theme.background);
+            document.documentElement.style.setProperty('--text-color', theme.text);
+            currentTheme = themeName;
+        }
+
+        // UI State Management
+        function showCreateRoomForm() {
+            document.getElementById('initialButtons').style.display = 'none';
+            document.getElementById('createRoomForm').style.display = 'block';
+        }
+
+        function showJoinRoomForm() {
+            document.getElementById('initialButtons').style.display = 'none';
+            document.getElementById('joinRoomForm').style.display = 'block';
+        }
+
+        function showInitialButtons() {
+            document.getElementById('initialButtons').style.display = 'flex';
+            document.getElementById('createRoomForm').style.display = 'none';
+            document.getElementById('joinRoomForm').style.display = 'none';
+        }
+
+        function enterRoom() {
+            document.getElementById('initialForms').style.display = 'none';
+            document.querySelector('.container').style.display = 'grid';
             if (isAdmin) {
-                console.log('Room updated:', newRoom);
+                document.getElementById('adminControls').style.display = 'block';
             }
         }
-    }
 
-    async function handleVideoStateChange(payload) {
-        const { new: state } = payload;
-        
-        // Ignore own broadcasts
-        if (state.sender === userName) return;
-        
-        // Handle different video state changes
-        switch (state.action) {
-            case 'play':
-                videoElement?.play();
-                break;
-            case 'pause':
-                videoElement?.pause();
-                break;
-            case 'seek':
-                if (videoElement && state.value !== null) {
-                    videoElement.currentTime = state.value;
-                }
-                break;
-            case 'speed':
-                if (videoElement && state.value !== null) {
-                    videoElement.playbackRate = state.value;
-                }
-                break;
-        }
-    }
-
-    async function handleNewMessage(payload) {
-        const { new: message } = payload;
-        
-        // Only handle messages for current room
-        if (message.room_id !== roomId) return;
-        
-        // Add message to chat
-        addMessageToChat(message);
-    }
-
-    function addMessageToChat(message) {
-        const chatBox = document.getElementById('chatBox');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${message.sender === userName ? 'sent' : 'received'}`;
-        
-        // Handle different message types
-        switch (message.type) {
-            case 'text':
-                messageDiv.textContent = `${message.sender}: ${message.content}`;
-                break;
-            case 'file':
-                const fileLink = document.createElement('a');
-                fileLink.href = message.content;
-                fileLink.textContent = `📎 ${message.sender} shared a file`;
-                fileLink.target = '_blank';
-                messageDiv.appendChild(fileLink);
-                break;
-            case 'reaction':
-                messageDiv.textContent = `${message.sender} reacted with ${message.content}`;
-                break;
-        }
-        
-        chatBox.appendChild(messageDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    }
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
