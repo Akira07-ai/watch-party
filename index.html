@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arcane Watch Party</title>
     
-    <!-- Inline CSS (replacing main.css) -->
+    <!-- Inline CSS -->
     <style>
         /* Base styles */
         body {
@@ -22,6 +22,8 @@
             background-attachment: fixed;
             color: #fff;
             font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Character Images */
@@ -31,6 +33,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
+            overflow: hidden;
         }
 
         .character {
@@ -38,7 +41,12 @@
             opacity: 0.4;
             transition: opacity 0.3s ease;
             filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
-            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
 
         .jinx {
@@ -46,6 +54,7 @@
             bottom: -50px;
             width: 500px;
             transform: rotate(-5deg);
+            animation: float 6s ease-in-out infinite;
         }
 
         .vi {
@@ -53,6 +62,7 @@
             top: -50px;
             width: 400px;
             transform: rotate(5deg);
+            animation: float 8s ease-in-out infinite;
         }
 
         .caitlyn {
@@ -60,6 +70,7 @@
             top: -50px;
             width: 400px;
             transform: rotate(-5deg);
+            animation: float 7s ease-in-out infinite;
         }
 
         .silco {
@@ -67,6 +78,7 @@
             bottom: -50px;
             width: 500px;
             transform: rotate(5deg);
+            animation: float 9s ease-in-out infinite;
         }
 
         /* Login Container */
@@ -88,15 +100,46 @@
             text-align: center;
         }
 
+        .login-form h2 {
+            margin: 0 0 20px;
+            color: #ff0000;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
         /* Form Elements */
         input {
-            width: 100%;
+            width: calc(100% - 22px);
             padding: 10px;
             margin: 10px 0;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             color: white;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
         }
 
         button {
@@ -109,13 +152,19 @@
             color: white;
             cursor: pointer;
             transition: transform 0.3s ease;
+            font-size: 16px;
         }
 
         button:hover {
             transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
-        /* Main Container */
+        /* Create Room Form */
+        .create-room-form {
+            display: none;
+        }
+                /* Main Container */
         .container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -135,6 +184,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
         }
 
         .video-player {
@@ -142,42 +192,144 @@
             aspect-ratio: 16/9;
             background: #000;
             border-radius: 5px;
+            overflow: hidden;
         }
 
-        /* Chat Section */
+        .video-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .video-controls input {
+            flex-grow: 1;
+            margin: 0;
+        }
+
+        .video-controls button {
+            width: auto;
+            margin: 0;
+            padding: 10px 20px;
+        }
+
+        /* Admin Controls */
+        .admin-controls {
+            background: rgba(255, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .admin-controls h3 {
+            margin: 0 0 10px;
+            color: #ff0000;
+        }
+
+        .user-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+
+        /* Chat Video Section */
         .chat-video-section {
             background: rgba(0, 0, 0, 0.8);
             border-radius: 10px;
             padding: 20px;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .video-feeds {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .video-feed {
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 5px;
+            overflow: hidden;
         }
 
         .chat-box {
             flex-grow: 1;
             overflow-y: auto;
             padding: 10px;
-            margin-bottom: 10px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            max-height: 400px;
         }
 
         .message {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
+            padding: 8px 12px;
             margin: 5px 0;
             border-radius: 5px;
+            word-wrap: break-word;
         }
 
         .message.sent {
             background: rgba(255, 0, 0, 0.2);
             margin-left: 20%;
+            border-radius: 10px 10px 0 10px;
         }
 
         .message.received {
             background: rgba(255, 255, 255, 0.1);
             margin-right: 20%;
+            border-radius: 10px 10px 10px 0;
         }
 
-        /* Additional styles for file uploads and emojis */
+        .message strong {
+            color: #ff0000;
+            font-size: 0.9em;
+        }
+
+        /* Message Input Area */
+        .message-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .emoji-picker-btn, .file-upload-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            width: auto;
+            font-size: 20px;
+        }
+
+        .message-input input {
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .message-input button {
+            width: auto;
+            margin: 0;
+            padding: 10px 20px;
+        }
+
+        /* File Upload Styles */
         .chat-image {
             max-width: 200px;
             max-height: 200px;
@@ -186,9 +338,12 @@
             transition: transform 0.3s ease;
         }
 
+        .chat-image:hover {
+            transform: scale(1.05);
+        }
+
         .chat-video {
             max-width: 200px;
-            max-height: 200px;
             border-radius: 5px;
         }
 
@@ -202,6 +357,11 @@
             transition: background 0.3s ease;
         }
 
+        .file-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Upload Progress */
         .upload-progress {
             width: 100%;
             height: 4px;
@@ -216,10 +376,106 @@
             border-radius: 2px;
             transition: width 0.3s ease;
         }
+
+        /* Emoji Picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 5px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        .emoji-picker span {
+            cursor: pointer;
+            padding: 5px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .emoji-picker span:hover {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
-    <!-- Your existing HTML content -->
+    <div class="character-images">
+        <img src="images/characters/jinx.png" alt="" class="character jinx">
+        <img src="images/characters/vi.jpg" alt="" class="character vi">
+        <img src="images/characters/caitlyn.jpg" alt="" class="character caitlyn">
+        <img src="images/characters/silco.webp" alt="" class="character silco">
+    </div>
+
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <h2>Arcane Watch Party</h2>
+            
+            <!-- Join Room Form -->
+            <div id="joinRoomForm">
+                <h3>Join Room</h3>
+                <input type="text" id="userName" placeholder="Your Display Name" required>
+                <input type="text" id="meetingName" placeholder="Meeting Name" required>
+                <div class="password-container">
+                    <input type="password" id="roomPassword" placeholder="Room Password" required>
+                    <button class="password-toggle" onclick="togglePassword('roomPassword')">👁️</button>
+                </div>
+                <button onclick="joinRoom()">Join Room</button>
+                <button onclick="showCreateRoom()">Create New Room</button>
+            </div>
+
+            <!-- Create Room Form -->
+            <div id="createRoomForm" class="create-room-form">
+                <h3>Create Room</h3>
+                <input type="text" id="newUserName" placeholder="Your Display Name" required>
+                <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required>
+                <div class="password-container">
+                    <input type="password" id="newRoomPassword" placeholder="Set Room Password" required>
+                    <button class="password-toggle" onclick="togglePassword('newRoomPassword')">👁️</button>
+                </div>
+                <button onclick="createRoom()">Create Room</button>
+                <button onclick="showJoinRoom()">Back to Join</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;">
+        <div class="video-section">
+            <div class="video-player" id="videoPlayer"></div>
+            <div class="video-controls">
+                <input type="text" id="videoUrl" placeholder="Paste video URL">
+                <button onclick="shareVideo()">Share Video</button>
+            </div>
+            <div class="admin-controls" id="adminControls" style="display: none;">
+                <h3>Room Controls</h3>
+                <button onclick="kickUser()">Kick User</button>
+                <button onclick="muteAll()">Mute All</button>
+                <button onclick="lockRoom()">Lock Room</button>
+                <div class="user-list" id="userList"></div>
+            </div>
+        </div>
+
+        <div class="chat-video-section">
+            <div class="video-feeds">
+                <div class="video-feed" id="localVideo"></div>
+                <div class="video-feed" id="remoteVideos"></div>
+            </div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="message-input">
+                <button class="emoji-picker-btn" onclick="toggleEmojiPicker()">😊</button>
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <label for="fileInput" class="file-upload-btn">📎</label>
+                <input type="file" id="fileInput" style="display: none" onchange="handleFileUpload(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div class="emoji-picker" id="emojiPicker" style="display: none"></div>
+        </div>
+    </div>
 
     <!-- Firebase CDN -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -229,11 +485,17 @@
     <!-- WebRTC adapter -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
-    <!-- Inline JavaScript (replacing app.js, chat.js, and video.js) -->
+    <!-- Inline JavaScript -->
     <script>
-        // app.js content
+        // Firebase Configuration
         const firebaseConfig = {
-            // Your Firebase configuration here
+            apiKey: "your-api-key",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "your-database-url",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
         };
 
         // Initialize Firebase
@@ -244,9 +506,12 @@
         // Global variables
         let userName = '';
         let roomName = '';
-        let isAdmin = false;
+        let isAdmin = false;        // UI Functions
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
 
-        // UI Functions
         function showCreateRoom() {
             document.getElementById('joinRoomForm').style.display = 'none';
             document.getElementById('createRoomForm').style.display = 'block';
@@ -257,9 +522,95 @@
             document.getElementById('joinRoomForm').style.display = 'block';
         }
 
-        // Add the rest of your app.js functions here
+        // Room Functions
+        async function createRoom() {
+            const newUserName = document.getElementById('newUserName').value;
+            const newMeetingName = document.getElementById('newMeetingName').value;
+            const newRoomPassword = document.getElementById('newRoomPassword').value;
 
-        // chat.js content
+            if (!newUserName || !newMeetingName || !newRoomPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const roomRef = database.ref(`rooms/${newMeetingName}`);
+                const snapshot = await roomRef.once('value');
+                
+                if (snapshot.exists()) {
+                    alert('Room already exists. Please choose a different name.');
+                    return;
+                }
+
+                await roomRef.set({
+                    password: newRoomPassword,
+                    admin: newUserName,
+                    created: Date.now()
+                });
+
+                userName = newUserName;
+                roomName = newMeetingName;
+                isAdmin = true;
+
+                enterRoom();
+
+            } catch (error) {
+                console.error('Error creating room:', error);
+                alert('Failed to create room');
+            }
+        }
+
+        async function joinRoom() {
+            const userNameInput = document.getElementById('userName').value;
+            const meetingNameInput = document.getElementById('meetingName').value;
+            const roomPasswordInput = document.getElementById('roomPassword').value;
+
+            if (!userNameInput || !meetingNameInput || !roomPasswordInput) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const roomRef = database.ref(`rooms/${meetingNameInput}`);
+                const snapshot = await roomRef.once('value');
+                
+                if (!snapshot.exists()) {
+                    alert('Room does not exist');
+                    return;
+                }
+
+                const roomData = snapshot.val();
+                if (roomData.password !== roomPasswordInput) {
+                    alert('Incorrect password');
+                    return;
+                }
+
+                userName = userNameInput;
+                roomName = meetingNameInput;
+                isAdmin = roomData.admin === userNameInput;
+
+                enterRoom();
+
+            } catch (error) {
+                console.error('Error joining room:', error);
+                alert('Failed to join room');
+            }
+        }
+
+        function enterRoom() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.querySelector('.container').style.display = 'grid';
+            
+            if (isAdmin) {
+                document.getElementById('adminControls').style.display = 'block';
+            }
+
+            initializeChat();
+            initializeVideoChat();
+            updateUserList();
+        }
+
+        // Chat Functions
         function initializeChat() {
             const chatRef = database.ref(`rooms/${roomName}/chat`);
             const chatBox = document.getElementById('chatBox');
@@ -275,16 +626,244 @@
                     sendMessage();
                 }
             });
+
+            // Initialize emoji picker
+            initializeEmojiPicker();
         }
 
-        // Add the rest of your chat.js functions here
-
-        // video.js content
-        function initializeVideoChat() {
-            // Your video chat initialization code
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                const chatRef = database.ref(`rooms/${roomName}/chat`);
+                chatRef.push({
+                    sender: userName,
+                    message: message,
+                    timestamp: Date.now(),
+                    type: 'text'
+                });
+                messageInput.value = '';
+            }
         }
 
-        // Add the rest of your video.js functions here
+        function displayMessage(message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(message.sender === userName ? 'sent' : 'received');
+
+            if (message.type === 'file') {
+                if (message.fileType.startsWith('image/')) {
+                    messageElement.innerHTML = `
+                        <strong>${message.sender}</strong><br>
+                        <img src="${message.message}" alt="${message.fileName}" class="chat-image"><br>
+                        <small>${message.fileName}</small>
+                    `;
+                } else {
+                    messageElement.innerHTML = `
+                        <strong>${message.sender}</strong><br>
+                        <a href="${message.message}" target="_blank" class="file-link">
+                            📎 ${message.fileName}
+                        </a>
+                    `;
+                }
+            } else {
+                messageElement.innerHTML = `
+                    <strong>${message.sender}</strong><br>
+                    ${message.message}
+                `;
+            }
+
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+                // File Upload Functions
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Size validation (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File too large. Please choose a file under 10MB.');
+                return;
+            }
+
+            // Create progress element
+            const progressElement = document.createElement('div');
+            progressElement.innerHTML = `
+                <div>Uploading ${file.name}...</div>
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" style="width: 0%"></div>
+                </div>
+            `;
+            document.getElementById('chatBox').appendChild(progressElement);
+
+            try {
+                const fileRef = storage.ref(`rooms/${roomName}/files/${Date.now()}_${file.name}`);
+                
+                // Upload with progress tracking
+                const uploadTask = fileRef.put(file);
+                
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        // Update progress bar
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressElement.querySelector('.upload-progress-bar').style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error('Upload failed:', error);
+                        progressElement.innerHTML = 'Upload failed';
+                        setTimeout(() => progressElement.remove(), 3000);
+                    },
+                    async () => {
+                        // Upload completed
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        progressElement.remove();
+
+                        // Send message to chat
+                        const chatRef = database.ref(`rooms/${roomName}/chat`);
+                        chatRef.push({
+                            sender: userName,
+                            message: downloadURL,
+                            fileName: file.name,
+                            fileType: file.type,
+                            timestamp: Date.now(),
+                            type: 'file'
+                        });
+                    }
+                );
+            } catch (error) {
+                console.error('Error starting upload:', error);
+                progressElement.innerHTML = 'Upload failed';
+                setTimeout(() => progressElement.remove(), 3000);
+            }
+        }
+
+        // Video Functions
+        function shareVideo() {
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            
+            if (!videoUrl) {
+                alert('Please enter a valid video URL');
+                return;
+            }
+
+            const videoRef = database.ref(`rooms/${roomName}/video`);
+            videoRef.set({
+                url: videoUrl,
+                sharedBy: userName,
+                timestamp: Date.now()
+            });
+
+            loadVideo(videoUrl);
+        }
+
+        function loadVideo(url) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                const videoId = extractYouTubeId(url);
+                videoPlayer.innerHTML = `
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/${videoId}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>`;
+            } else {
+                videoPlayer.innerHTML = `
+                    <video id="sharedVideo" controls style="width: 100%; height: 100%;">
+                        <source src="${url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>`;
+            }
+        }
+
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Admin Functions
+        function updateUserList() {
+            if (!isAdmin) return;
+            
+            const userListRef = database.ref(`rooms/${roomName}/users`);
+            userListRef.on('value', (snapshot) => {
+                const users = snapshot.val() || {};
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '';
+                
+                Object.entries(users).forEach(([userId, userData]) => {
+                    const userElement = document.createElement('div');
+                    userElement.className = 'user-item';
+                    userElement.innerHTML = `
+                        <span>${userData.name}</span>
+                        <button onclick="kickUserById('${userId}')">Kick</button>
+                    `;
+                    userList.appendChild(userElement);
+                });
+            });
+        }
+
+        function kickUser() {
+            if (!isAdmin) return;
+            const userId = prompt('Enter user ID to kick:');
+            if (userId) {
+                kickUserById(userId);
+            }
+        }
+
+        function kickUserById(userId) {
+            if (!isAdmin) return;
+            const userRef = database.ref(`rooms/${roomName}/users/${userId}`);
+            userRef.remove();
+        }
+
+        function muteAll() {
+            if (!isAdmin) return;
+            const videoRef = database.ref(`rooms/${roomName}/settings/muteAll`);
+            videoRef.set(true);
+        }
+
+        function lockRoom() {
+            if (!isAdmin) return;
+            const roomRef = database.ref(`rooms/${roomName}/settings/locked`);
+            roomRef.set(true);
+        }
+
+        // Emoji Picker
+        function initializeEmojiPicker() {
+            const emojis = ['😊', '😂', '❤️', '👍', '😎', '🎮', '🎥', '💬', '🔥', '✨', '🎵', '🎬', '👋', '🤔', '😅', '🙌'];
+            const picker = document.getElementById('emojiPicker');
+            
+            emojis.forEach(emoji => {
+                const span = document.createElement('span');
+                span.textContent = emoji;
+                span.onclick = () => addEmoji(emoji);
+                picker.appendChild(span);
+            });
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
+        }
+
+        function addEmoji(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value += emoji;
+            messageInput.focus();
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            initializeEmojiPicker();
+        };
     </script>
 </body>
 </html>
