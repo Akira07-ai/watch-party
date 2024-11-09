@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arcane Watch Party</title>
     
+    <!-- Supabase JS -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <!-- Inline CSS -->
     <style>
         /* Base styles */
@@ -403,6 +406,179 @@
         .emoji-picker span:hover {
             transform: scale(1.2);
         }
+
+        /* Add these styles */
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #600 0%, #f00 100%);
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-progress-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .upload-progress {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 10px 0;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, #600 0%, #f00 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Enhanced Styles */
+        .login-form {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            width: 350px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .login-form:hover {
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .form-slide {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-error {
+            display: none;
+            color: #ff4444;
+            font-size: 0.8em;
+            margin-top: 5px;
+            text-align: left;
+            position: absolute;
+            left: 0;
+            bottom: -20px;
+        }
+
+        input:invalid + .input-error {
+            display: block;
+        }
+
+        input:invalid {
+            border-color: #ff4444;
+        }
+
+        .animated-form input {
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .animated-form input:focus {
+            transform: translateY(-5px);
+        }
+
+        .submit-btn, .back-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:after, .back-btn:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transition: width 0.3s ease, height 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .submit-btn:hover:after, .back-btn:hover:after {
+            width: 200%;
+            height: 200%;
+        }
+
+        /* Loading Indicator */
+        .loading {
+            position: relative;
+        }
+
+        .loading:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -417,30 +593,69 @@
         <div class="login-form">
             <h2>Arcane Watch Party</h2>
             
-            <!-- Join Room Form -->
-            <div id="joinRoomForm">
-                <h3>Join Room</h3>
-                <input type="text" id="userName" placeholder="Your Display Name" required>
-                <input type="text" id="meetingName" placeholder="Meeting Name" required>
-                <div class="password-container">
-                    <input type="password" id="roomPassword" placeholder="Room Password" required>
-                    <button class="password-toggle" onclick="togglePassword('roomPassword')">👁️</button>
-                </div>
-                <button onclick="joinRoom()">Join Room</button>
-                <button onclick="showCreateRoom()">Create New Room</button>
+            <!-- Initial Buttons -->
+            <div id="initialButtons" class="fade-in">
+                <button class="pulse" onclick="showCreateRoomForm()">Create Room</button>
+                <button class="pulse" onclick="showJoinRoomForm()">Join Room</button>
             </div>
 
             <!-- Create Room Form -->
-            <div id="createRoomForm" class="create-room-form">
-                <h3>Create Room</h3>
-                <input type="text" id="newUserName" placeholder="Your Display Name" required>
-                <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required>
-                <div class="password-container">
-                    <input type="password" id="newRoomPassword" placeholder="Set Room Password" required>
-                    <button class="password-toggle" onclick="togglePassword('newRoomPassword')">👁️</button>
-                </div>
-                <button onclick="createRoom()">Create Room</button>
-                <button onclick="showJoinRoom()">Back to Join</button>
+            <div id="createRoomForm" class="form-slide">
+                <h3>Create New Room</h3>
+                <form onsubmit="handleCreateRoom(event)" class="animated-form">
+                    <div class="input-group">
+                        <input type="text" id="newUserName" placeholder="Your Display Name" required
+                               pattern=".{3,20}" title="Name must be 3-20 characters">
+                        <span class="input-error">Name must be 3-20 characters</span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required
+                               pattern="[a-zA-Z0-9-]{3,20}" title="Only letters, numbers, and hyphens (3-20 characters)">
+                        <span class="input-error">Only letters, numbers, and hyphens (3-20 characters)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="password-container">
+                            <input type="password" id="newRoomPassword" placeholder="Set Room Password" required
+                                   pattern=".{6,}" title="Password must be at least 6 characters">
+                            <button type="button" class="password-toggle" onclick="togglePassword('newRoomPassword')">👁️</button>
+                        </div>
+                        <span class="input-error">Password must be at least 6 characters</span>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Create Room</button>
+                    <button type="button" onclick="showInitialButtons()" class="back-btn">Back</button>
+                </form>
+            </div>
+
+            <!-- Join Room Form -->
+            <div id="joinRoomForm" class="form-slide">
+                <h3>Join Existing Room</h3>
+                <form onsubmit="handleJoinRoom(event)" class="animated-form">
+                    <div class="input-group">
+                        <input type="text" id="userName" placeholder="Your Display Name" required
+                               pattern=".{3,20}" title="Name must be 3-20 characters">
+                        <span class="input-error">Name must be 3-20 characters</span>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="meetingName" placeholder="Meeting Name" required
+                               pattern="[a-zA-Z0-9-]{3,20}" title="Only letters, numbers, and hyphens (3-20 characters)">
+                        <span class="input-error">Only letters, numbers, and hyphens (3-20 characters)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="password-container">
+                            <input type="password" id="roomPassword" placeholder="Room Password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('roomPassword')">👁️</button>
+                        </div>
+                        <span class="input-error">Invalid password</span>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Join Room</button>
+                    <button type="button" onclick="showInitialButtons()" class="back-btn">Back</button>
+                </form>
             </div>
         </div>
     </div>
@@ -450,7 +665,9 @@
             <div class="video-player" id="videoPlayer"></div>
             <div class="video-controls">
                 <input type="text" id="videoUrl" placeholder="Paste video URL">
-                <button onclick="shareVideo()">Share Video</button>
+                <button onclick="shareVideo()">Share URL</button>
+                <label for="videoFileInput" class="upload-btn">Upload Video</label>
+                <input type="file" id="videoFileInput" accept="video/*" style="display: none" onchange="handleVideoUpload(event)">
             </div>
             <div class="admin-controls" id="adminControls" style="display: none;">
                 <h3>Room Controls</h3>
@@ -478,65 +695,19 @@
         </div>
     </div>
 
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-
-    <!-- WebRTC adapter -->
-    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-
-    <!-- Inline JavaScript -->
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-
-            apiKey: "AIzaSyBT6qPRvbKJmOOPaFOrQTsQaQU0DYsOvZA",
-          
-            authDomain: "watch-party-89042.firebaseapp.com",
-          
-            databaseURL: "https://watch-party-89042-default-rtdb.asia-southeast1.firebasedatabase.app",
-          
-            projectId: "watch-party-89042",
-          
-            storageBucket: "watch-party-89042.firebasestorage.app",
-          
-            messagingSenderId: "801694983399",
-          
-            appId: "1:801694983399:web:32ac147c52f19e4bd56e42",
-          
-            measurementId: "G-2VB13DYW85"
-          
-          };
-          
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const storage = firebase.storage();
+        // Initialize Supabase
+        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcXhsaWxra3FuaGZzbml4dHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjI4MDYsImV4cCI6MjA0NjczODgwNn0.XAGbRLnbpfitg9QjGLNoee1fxp57Li4ExB4_BxwUvM4'
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey)
 
         // Global variables
         let userName = '';
+        let roomId = '';
         let roomName = '';
         let isAdmin = false;
 
-        // UI Functions
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        function showCreateRoom() {
-            document.getElementById('joinRoomForm').style.display = 'none';
-            document.getElementById('createRoomForm').style.display = 'block';
-        }
-
-        function showJoinRoom() {
-            document.getElementById('createRoomForm').style.display = 'none';
-            document.getElementById('joinRoomForm').style.display = 'block';
-        }
-
-        // Room Functions
+        // Room Creation Function
         async function createRoom() {
             const newUserName = document.getElementById('newUserName').value;
             const newMeetingName = document.getElementById('newMeetingName').value;
@@ -548,32 +719,50 @@
             }
 
             try {
-                const roomRef = database.ref(`rooms/${newMeetingName}`);
-                const snapshot = await roomRef.once('value');
-                
-                if (snapshot.exists()) {
-                    alert('Room already exists. Please choose a different name.');
-                    return;
-                }
+                // Create room
+                const { data: room, error: roomError } = await supabase
+                    .from('rooms')
+                    .insert([
+                        {
+                            name: newMeetingName,
+                            password: newRoomPassword,
+                            admin_name: newUserName
+                        }
+                    ])
+                    .select()
+                    .single();
 
-                await roomRef.set({
-                    password: newRoomPassword,
-                    admin: newUserName,
-                    created: Date.now()
-                });
+                if (roomError) throw roomError;
 
+                // Add admin user to room_users
+                const { error: userError } = await supabase
+                    .from('room_users')
+                    .insert([
+                        {
+                            room_id: room.id,
+                            user_name: newUserName,
+                            is_admin: true
+                        }
+                    ]);
+
+                if (userError) throw userError;
+
+                // Set global variables
                 userName = newUserName;
+                roomId = room.id;
                 roomName = newMeetingName;
                 isAdmin = true;
 
+                // Enter room
                 enterRoom();
 
             } catch (error) {
                 console.error('Error creating room:', error);
-                alert('Failed to create room');
+                alert('Failed to create room: ' + error.message);
             }
         }
 
+        // Join Room Function
         async function joinRoom() {
             const userNameInput = document.getElementById('userName').value;
             const meetingNameInput = document.getElementById('meetingName').value;
@@ -585,32 +774,48 @@
             }
 
             try {
-                const roomRef = database.ref(`rooms/${meetingNameInput}`);
-                const snapshot = await roomRef.once('value');
-                
-                if (!snapshot.exists()) {
-                    alert('Room does not exist');
+                // Check room exists and password matches
+                const { data: room, error: roomError } = await supabase
+                    .from('rooms')
+                    .select()
+                    .eq('name', meetingNameInput)
+                    .eq('password', roomPasswordInput)
+                    .single();
+
+                if (roomError) {
+                    alert('Invalid room name or password');
                     return;
                 }
 
-                const roomData = snapshot.val();
-                if (roomData.password !== roomPasswordInput) {
-                    alert('Incorrect password');
-                    return;
-                }
+                // Add user to room_users
+                const { error: userError } = await supabase
+                    .from('room_users')
+                    .insert([
+                        {
+                            room_id: room.id,
+                            user_name: userNameInput,
+                            is_admin: room.admin_name === userNameInput
+                        }
+                    ]);
 
+                if (userError) throw userError;
+
+                // Set global variables
                 userName = userNameInput;
+                roomId = room.id;
                 roomName = meetingNameInput;
-                isAdmin = roomData.admin === userNameInput;
+                isAdmin = room.admin_name === userNameInput;
 
+                // Enter room
                 enterRoom();
 
             } catch (error) {
                 console.error('Error joining room:', error);
-                alert('Failed to join room');
+                alert('Failed to join room: ' + error.message);
             }
         }
 
+        // Enter Room Function
         function enterRoom() {
             document.getElementById('loginContainer').style.display = 'none';
             document.querySelector('.container').style.display = 'grid';
@@ -621,79 +826,70 @@
 
             initializeChat();
             initializeVideoChat();
-            updateUserList();
+            subscribeToRoomUpdates();
         }
 
-        // Chat Functions
-        function initializeChat() {
-            const chatRef = database.ref(`rooms/${roomName}/chat`);
-            const chatBox = document.getElementById('chatBox');
-            const messageInput = document.getElementById('messageInput');
+        // Chat Functionality
+        async function initializeChat() {
+            // Subscribe to new messages
+            const subscription = supabase
+                .channel('messages')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'messages',
+                        filter: `room_id=eq.${roomId}`
+                    }, 
+                    payload => {
+                        displayMessage(payload.new);
+                    }
+                )
+                .subscribe();
 
-            chatRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                displayMessage(message);
-            });
+            // Load existing messages
+            const { data: messages, error } = await supabase
+                .from('messages')
+                .select('*')
+                .eq('room_id', roomId)
+                .order('created_at', { ascending: true });
 
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
+            if (error) {
+                console.error('Error loading messages:', error);
+                return;
+            }
 
-            // Initialize emoji picker
-            initializeEmojiPicker();
+            messages.forEach(message => displayMessage(message));
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value.trim();
+            const content = messageInput.value.trim();
             
-            if (message) {
-                const chatRef = database.ref(`rooms/${roomName}/chat`);
-                chatRef.push({
-                    sender: userName,
-                    message: message,
-                    timestamp: Date.now(),
-                    type: 'text'
-                });
+            if (!content) return;
+
+            try {
+                const { error } = await supabase
+                    .from('messages')
+                    .insert([
+                        {
+                            room_id: roomId,
+                            sender: userName,
+                            content: content,
+                            type: 'text'
+                        }
+                    ]);
+
+                if (error) throw error;
                 messageInput.value = '';
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message');
             }
         }
 
-        function displayMessage(message) {
-            const chatBox = document.getElementById('chatBox');
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.classList.add(message.sender === userName ? 'sent' : 'received');
-
-            if (message.type === 'file') {
-                if (message.fileType.startsWith('image/')) {
-                    messageElement.innerHTML = `
-                        <strong>${message.sender}</strong><br>
-                        <img src="${message.message}" alt="${message.fileName}" class="chat-image"><br>
-                        <small>${message.fileName}</small>
-                    `;
-                } else {
-                    messageElement.innerHTML = `
-                        <strong>${message.sender}</strong><br>
-                        <a href="${message.message}" target="_blank" class="file-link">
-                            📎 ${message.fileName}
-                        </a>
-                    `;
-                }
-            } else {
-                messageElement.innerHTML = `
-                    <strong>${message.sender}</strong><br>
-                    ${message.message}
-                `;
-            }
-
-            chatBox.appendChild(messageElement);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // File Upload Functions
+        // File Upload Functionality
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -704,74 +900,187 @@
                 return;
             }
 
-            // Create progress element
-            const progressElement = document.createElement('div');
-            progressElement.innerHTML = `
-                <div>Uploading ${file.name}...</div>
-                <div class="upload-progress">
-                    <div class="upload-progress-bar" style="width: 0%"></div>
-                </div>
-            `;
-            document.getElementById('chatBox').appendChild(progressElement);
-
             try {
-                const fileRef = storage.ref(`rooms/${roomName}/files/${Date.now()}_${file.name}`);
-                
-                // Upload with progress tracking
-                const uploadTask = fileRef.put(file);
-                
-                uploadTask.on('state_changed', 
-                    (snapshot) => {
-                        // Update progress bar
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressElement.querySelector('.upload-progress-bar').style.width = progress + '%';
-                    },
-                    (error) => {
-                        console.error('Upload failed:', error);
-                        progressElement.innerHTML = 'Upload failed';
-                        setTimeout(() => progressElement.remove(), 3000);
-                    },
-                    async () => {
-                        // Upload completed
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        progressElement.remove();
+                // Create progress element
+                const progressElement = document.createElement('div');
+                progressElement.className = 'upload-progress-container';
+                progressElement.innerHTML = `
+                    <div>Uploading ${file.name}...</div>
+                    <div class="upload-progress">
+                        <div class="upload-progress-bar" style="width: 0%"></div>
+                    </div>
+                `;
+                document.getElementById('chatBox').appendChild(progressElement);
 
-                        // Send message to chat
-                        const chatRef = database.ref(`rooms/${roomName}/chat`);
-                        chatRef.push({
+                // Upload file to Supabase Storage
+                const filename = `${Date.now()}_${file.name}`;
+                const { data, error } = await supabase.storage
+                    .from('chat-files')
+                    .upload(`${roomId}/${filename}`, file, {
+                        onUploadProgress: (progress) => {
+                            const percent = (progress.loaded / progress.total) * 100;
+                            progressElement.querySelector('.upload-progress-bar').style.width = percent + '%';
+                        }
+                    });
+
+                if (error) throw error;
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('chat-files')
+                    .getPublicUrl(`${roomId}/${filename}`);
+
+                // Send file message
+                await supabase
+                    .from('messages')
+                    .insert([
+                        {
+                            room_id: roomId,
                             sender: userName,
-                            message: downloadURL,
-                            fileName: file.name,
-                            fileType: file.type,
-                            timestamp: Date.now(),
-                            type: 'file'
-                        });
-                    }
-                );
+                            content: publicUrl,
+                            type: 'file',
+                            file_name: file.name
+                        }
+                    ]);
+
+                progressElement.remove();
+
             } catch (error) {
-                console.error('Error starting upload:', error);
-                progressElement.innerHTML = 'Upload failed';
-                setTimeout(() => progressElement.remove(), 3000);
+                console.error('Error uploading file:', error);
+                alert('Failed to upload file');
             }
         }
 
-        // Video Functions
-        function shareVideo() {
-            const videoUrl = document.getElementById('videoUrl').value.trim();
-            
-            if (!videoUrl) {
-                alert('Please enter a valid video URL');
+        // Video Sharing Functionality
+        async function handleVideoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('video/')) {
+                alert('Please select a video file');
                 return;
             }
 
-            const videoRef = database.ref(`rooms/${roomName}/video`);
-            videoRef.set({
-                url: videoUrl,
-                sharedBy: userName,
-                timestamp: Date.now()
-            });
+            try {
+                // Create progress element
+                const progressElement = document.createElement('div');
+                progressElement.className = 'upload-progress-container';
+                progressElement.innerHTML = `
+                    <div>Uploading ${file.name}...</div>
+                    <div class="upload-progress">
+                        <div class="upload-progress-bar" style="width: 0%"></div>
+                    </div>
+                `;
+                document.getElementById('videoPlayer').appendChild(progressElement);
 
-            loadVideo(videoUrl);
+                // Upload video to Supabase Storage
+                const filename = `${Date.now()}_${file.name}`;
+                const { data, error } = await supabase.storage
+                    .from('videos')
+                    .upload(`${roomId}/${filename}`, file, {
+                        onUploadProgress: (progress) => {
+                            const percent = (progress.loaded / progress.total) * 100;
+                            progressElement.querySelector('.upload-progress-bar').style.width = percent + '%';
+                        }
+                    });
+
+                if (error) throw error;
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('videos')
+                    .getPublicUrl(`${roomId}/${filename}`);
+
+                // Save video information
+                await supabase
+                    .from('videos')
+                    .insert([
+                        {
+                            room_id: roomId,
+                            url: publicUrl,
+                            shared_by: userName,
+                            file_name: file.name
+                        }
+                    ]);
+
+                progressElement.remove();
+                loadVideo(publicUrl);
+
+            } catch (error) {
+                console.error('Error uploading video:', error);
+                alert('Failed to upload video');
+            }
+        }
+
+        // Real-time Updates
+        function subscribeToRoomUpdates() {
+            // Subscribe to video updates
+            supabase
+                .channel('videos')
+                .on('postgres_changes', 
+                    { 
+                        event: 'INSERT', 
+                        schema: 'public', 
+                        table: 'videos',
+                        filter: `room_id=eq.${roomId}`
+                    }, 
+                    payload => {
+                        loadVideo(payload.new.url);
+                    }
+                )
+                .subscribe();
+
+            // Subscribe to user updates
+            if (isAdmin) {
+                supabase
+                    .channel('room_users')
+                    .on('postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'room_users',
+                            filter: `room_id=eq.${roomId}`
+                        },
+                        payload => {
+                            updateUserList();
+                        }
+                    )
+                    .subscribe();
+            }
+        }
+
+        // Display Functions
+        function displayMessage(message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(message.sender === userName ? 'sent' : 'received');
+
+            if (message.type === 'file') {
+                // Check if it's an image
+                if (message.file_name.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                    messageElement.innerHTML = `
+                        <strong>${message.sender}</strong><br>
+                        <img src="${message.content}" alt="Shared image" class="chat-image" onclick="openImage('${message.content}')"><br>
+                        <small>${message.file_name}</small>
+                    `;
+                } else {
+                    messageElement.innerHTML = `
+                        <strong>${message.sender}</strong><br>
+                        <a href="${message.content}" target="_blank" class="file-link">
+                            📎 ${message.file_name}
+                        </a>
+                    `;
+                }
+            } else {
+                messageElement.innerHTML = `
+                    <strong>${message.sender}</strong><br>
+                    ${message.content}
+                `;
+            }
+
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         function loadVideo(url) {
@@ -792,63 +1101,96 @@
                 videoPlayer.innerHTML = `
                     <video id="sharedVideo" controls style="width: 100%; height: 100%;">
                         <source src="${url}" type="video/mp4">
+                        <source src="${url}" type="video/webm">
                         Your browser does not support the video tag.
                     </video>`;
+
+                // Add video sync functionality
+                const video = document.getElementById('sharedVideo');
+                if (video && isAdmin) {
+                    video.onplay = () => broadcastVideoState('play', video.currentTime);
+                    video.onpause = () => broadcastVideoState('pause', video.currentTime);
+                    video.onseeked = () => broadcastVideoState('seek', video.currentTime);
+                }
             }
         }
 
+        // Admin Controls
+        async function updateUserList() {
+            if (!isAdmin) return;
+
+            try {
+                const { data: users, error } = await supabase
+                    .from('room_users')
+                    .select('*')
+                    .eq('room_id', roomId);
+
+                if (error) throw error;
+
+                const userList = document.getElementById('userList');
+                userList.innerHTML = '';
+                
+                users.forEach(user => {
+                    const userElement = document.createElement('div');
+                    userElement.className = 'user-item';
+                    userElement.innerHTML = `
+                        <span>${user.user_name}</span>
+                        ${user.user_name !== userName ? 
+                            `<button onclick="kickUser('${user.id}')">Kick</button>` : 
+                            '<span>(You)</span>'}
+                    `;
+                    userList.appendChild(userElement);
+                });
+
+            } catch (error) {
+                console.error('Error updating user list:', error);
+            }
+        }
+
+        async function kickUser(userId) {
+            if (!isAdmin) return;
+
+            try {
+                const { error } = await supabase
+                    .from('room_users')
+                    .delete()
+                    .eq('id', userId);
+
+                if (error) throw error;
+
+            } catch (error) {
+                console.error('Error kicking user:', error);
+                alert('Failed to kick user');
+            }
+        }
+
+        // Video Sync Functions
+        async function broadcastVideoState(action, time) {
+            if (!isAdmin) return;
+
+            try {
+                await supabase
+                    .from('videos')
+                    .update({ 
+                        state: { action, time },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('room_id', roomId);
+
+            } catch (error) {
+                console.error('Error broadcasting video state:', error);
+            }
+        }
+
+        // Utility Functions
         function extractYouTubeId(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
             const match = url.match(regExp);
             return (match && match[2].length === 11) ? match[2] : null;
         }
 
-        // Admin Functions
-        function updateUserList() {
-            if (!isAdmin) return;
-            
-            const userListRef = database.ref(`rooms/${roomName}/users`);
-            userListRef.on('value', (snapshot) => {
-                const users = snapshot.val() || {};
-                const userList = document.getElementById('userList');
-                userList.innerHTML = '';
-                
-                Object.entries(users).forEach(([userId, userData]) => {
-                    const userElement = document.createElement('div');
-                    userElement.className = 'user-item';
-                    userElement.innerHTML = `
-                        <span>${userData.name}</span>
-                        <button onclick="kickUserById('${userId}')">Kick</button>
-                    `;
-                    userList.appendChild(userElement);
-                });
-            });
-        }
-
-        function kickUser() {
-            if (!isAdmin) return;
-            const userId = prompt('Enter user ID to kick:');
-            if (userId) {
-                kickUserById(userId);
-            }
-        }
-
-        function kickUserById(userId) {
-            if (!isAdmin) return;
-            const userRef = database.ref(`rooms/${roomName}/users/${userId}`);
-            userRef.remove();
-        }
-
-        function muteAll() {
-            if (!isAdmin) return;
-            const videoRef = database.ref(`rooms/${roomName}/settings/muteAll`);
-            videoRef.set(true);
-        }
-
-        function lockRoom() {
-            if (!isAdmin) return;
-            const roomRef = database.ref(`rooms/${roomName}/settings/locked`);
-            roomRef.set(true);
+        function openImage(url) {
+            window.open(url, '_blank');
         }
 
         // Emoji Picker
@@ -879,6 +1221,75 @@
         window.onload = function() {
             initializeEmojiPicker();
         };
+
+        // Form Handling Functions
+        async function handleCreateRoom(event) {
+            event.preventDefault();
+            const button = event.submitter;
+            const form = event.target;
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            try {
+                button.classList.add('loading');
+                button.disabled = true;
+                await createRoom();
+            } catch (error) {
+                showError('Failed to create room: ' + error.message);
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        async function handleJoinRoom(event) {
+            event.preventDefault();
+            const button = event.submitter;
+            const form = event.target;
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            try {
+                button.classList.add('loading');
+                button.disabled = true;
+                await joinRoom();
+            } catch (error) {
+                showError('Failed to join room: ' + error.message);
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message fade-in';
+            errorDiv.textContent = message;
+            
+            document.querySelector('.login-form').appendChild(errorDiv);
+            
+            errorDiv.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        // Navigation Functions
+        function showCreateRoomForm() {
+            const initial = document.getElementById('initialButtons');
+            const createForm = document.getElementById('createRoomForm');
+            
+            initial.style.animation = 'fadeIn 0.3s reverse';
+            setTimeout(() => {
+                initial.style.display = 'none';
+                createForm.style.display = 'block';
+                createForm.style.animation = 'slideIn 0.3s forwards';
+            }, 300);
+        }
+
+        // Similar functions for showJoinRoomForm and showInitialButtons
     </script>
 </body>
 </html>
