@@ -12,13 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 
-    <!-- Initialize Supabase -->
-    <script>
-        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcXhsaWxra3FuaGZzbml4dHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjI4MDYsImV4cCI6MjA0NjczODgwNn0.XAGbRLnbpfitg9QjGLNoee1fxp57Li4ExB4_BxwUvM4';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
-
     <style>
         /* Reset and Base Styles */
         :root {
@@ -476,6 +469,12 @@
 
     <!-- Main JavaScript -->
     <script>
+        // Supabase Initialization
+        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxcXhsaWxra3FuaGZzbml4dHdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNjI4MDYsImV4cCI6MjA0NjczODgwNn0.XAGbRLnbpfitg9QjGLNoee1fxp57Li4ExB4_BxwUvM4';
+        const { createClient } = supabase;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
         // Global Variables
         let roomId;
         let userName;
