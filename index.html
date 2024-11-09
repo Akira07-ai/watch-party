@@ -6,12 +6,20 @@
     <title>Arcane Watch Party</title>
     
     <!-- External Dependencies -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/simple-peer@9.11.0/simplepeer.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 
+    <!-- Initialize Supabase -->
+    <script>
+        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co';
+        const supabaseKey = process.env.SUPABASE_KEY;
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+
+    <!-- Your existing styles here -->
     <style>
         /* Reset and Base Styles */
         :root {
@@ -27,6 +35,13 @@
             --spacing-sm: 10px;
             --spacing-md: 15px;
             --spacing-lg: 20px;
+
+            /* Character Theme Colors */
+            --jinx-primary: #ff69b4;
+            --vi-primary: #9370db;
+            --caitlyn-primary: #4169e1;
+            --ekko-primary: #32cd32;
+            --silco-primary: #dc143c;
         }
 
         * {
@@ -117,7 +132,7 @@
             margin: 0 auto;
         }
 
-        /* Video Section Styles */
+        /* Video Section */
         .video-section {
             background: var(--overlay-bg);
             border-radius: var(--border-radius-lg);
@@ -184,25 +199,6 @@
             height: 100%;
         }
 
-        .chat-tabs {
-            display: flex;
-            gap: 2px;
-            padding: var(--spacing-sm) var(--spacing-sm) 0;
-        }
-
-        .chat-tabs button {
-            padding: var(--spacing-sm) var(--spacing-md);
-            border: none;
-            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-color);
-            cursor: pointer;
-        }
-
-        .chat-tabs button.active {
-            background: var(--accent-color);
-        }
-
         .chat-box {
             flex-grow: 1;
             overflow-y: auto;
@@ -228,55 +224,6 @@
         .message.received {
             background: rgba(255, 255, 255, 0.1);
             align-self: flex-start;
-        }
-
-        /* File Sharing */
-        .files-box {
-            display: none;
-            height: 100%;
-            padding: var(--spacing-md);
-            overflow-y: auto;
-        }
-
-        .files-box.active {
-            display: block;
-        }
-
-        .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-lg);
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .upload-area.drag-over {
-            border-color: var(--primary-color);
-            background: rgba(255, 0, 0, 0.1);
-        }
-
-        /* Reactions */
-        .reaction-bar {
-            display: flex;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            margin-top: var(--spacing-sm);
-        }
-
-        .reaction-btn {
-            font-size: 20px;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .reaction-btn:hover {
-            transform: scale(1.2);
         }
 
         /* Animations */
@@ -306,15 +253,170 @@
             .chat-section {
                 height: 400px;
             }
+        }
 
-            .video-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
+        /* Emoji Picker Styles */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: var(--overlay-bg);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-sm);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-xs);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
 
-            .modal-content {
-                width: 95%;
-                margin: 5% auto;
-            }
+        .emoji-picker span {
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .emoji-picker span:hover {
+            transform: scale(1.2);
+        }
+
+        .emoji-button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+
+        /* Reactions */
+        .reaction-bar {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-top: var(--spacing-sm);
+        }
+
+        .reaction-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s;
+        }
+
+        .reaction-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+
+        .floating-reaction {
+            position: absolute;
+            bottom: 20px;
+            font-size: 2em;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+        }
+
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-color);
+            padding: var(--spacing-sm);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* Character Background Themes */
+        .theme-jinx {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/jinx-bg.jpg');
+            --primary-color: var(--jinx-primary);
+        }
+
+        .theme-vi {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/vi-bg.jpg');
+            --primary-color: var(--vi-primary);
+        }
+
+        .theme-caitlyn {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/caitlyn-bg.jpg');
+            --primary-color: var(--caitlyn-primary);
+        }
+
+        .theme-ekko {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/ekko-bg.jpg');
+            --primary-color: var(--ekko-primary);
+        }
+
+        .theme-silco {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/silco-bg.jpg');
+            --primary-color: var(--silco-primary);
+        }
+
+        /* Theme Selector Styles */
+        .theme-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--overlay-bg);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-md);
+            z-index: 1000;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-option img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .theme-option.active {
+            background: var(--primary-color);
         }
     </style>
 </head>
@@ -323,14 +425,14 @@
     <div id="initialForms" class="initial-container">
         <div class="forms-wrapper">
             <div id="initialButtons" class="button-group">
-                <button onclick="showCreateRoomForm()">Create Room</button>
-                <button onclick="showJoinRoomForm()">Join Room</button>
+                <button class="create-room-btn">Create Room</button>
+                <button class="join-room-btn">Join Room</button>
             </div>
 
             <!-- Create Room Form -->
             <div id="createRoomForm" class="form-slide" style="display: none;">
                 <h3>Create New Room</h3>
-                <form onsubmit="handleCreateRoom(event)" class="animated-form">
+                <form id="createRoomFormElement" class="animated-form">
                     <div class="input-group">
                         <input type="text" id="newUserName" placeholder="Your Display Name" required>
                     </div>
@@ -341,14 +443,14 @@
                         <input type="password" id="newRoomPassword" placeholder="Room Password" required>
                     </div>
                     <button type="submit">Create Room</button>
-                    <button type="button" onclick="showInitialButtons()">Back</button>
+                    <button type="button" class="back-btn">Back</button>
                 </form>
             </div>
 
             <!-- Join Room Form -->
             <div id="joinRoomForm" class="form-slide" style="display: none;">
                 <h3>Join Existing Room</h3>
-                <form onsubmit="handleJoinRoom(event)" class="animated-form">
+                <form id="joinRoomFormElement" class="animated-form">
                     <div class="input-group">
                         <input type="text" id="userName" placeholder="Your Display Name" required>
                     </div>
@@ -359,63 +461,48 @@
                         <input type="password" id="roomPassword" placeholder="Room Password" required>
                     </div>
                     <button type="submit">Join Room</button>
-                    <button type="button" onclick="showInitialButtons()">Back</button>
+                    <button type="button" class="back-btn">Back</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+        <h3>Choose Character Theme</h3>
+        <div class="theme-option" onclick="setTheme('jinx')">
+            <img src="jinx.png" alt="Jinx">
+            <span>Jinx</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('xi')">
+            <img src="xi.jpg" alt="xi">
+            <span>xi</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('caitlyn')">
+            <img src="caitlyn.jpg" alt="Caitlyn">
+            <span>Caitlyn</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('ekko')">
+            <img src="ekko.jpg" alt="Ekko">
+            <span>Ekko</span>
+        </div>
+        <div class="theme-option" onclick="setTheme('silco')">
+            <img src="silco.webp" alt="Silco">
+            <span>Silco</span>
+        </div>
+    </div>
+
     <!-- Main Container -->
     <div class="container" style="display: none;">
-        <!-- User Section -->
-        <div class="user-section">
-            <h3>Users in Room</h3>
-            <div id="userList" class="user-list"></div>
-            
-            <!-- Video Chat Grid -->
-            <div id="videoGrid" class="video-grid"></div>
-            
-            <div id="adminControls" class="admin-controls" style="display: none;">
-                <h4>Admin Controls</h4>
-                <button onclick="toggleRoomSettings()">Room Settings</button>
-                <button onclick="toggleAnalytics()">View Analytics</button>
-            </div>
-        </div>
-
-        <!-- Video Section -->
+        <!-- Your existing container content -->
         <div class="video-section">
-            <!-- Theme Selector -->
-            <div class="theme-selector">
-                <select onchange="applyTheme(this.value)">
-                    <option value="default">Default Theme</option>
-                    <option value="light">Light Theme</option>
-                    <option value="neon">Neon Theme</option>
-                </select>
-            </div>
-
-            <div class="screen-share-controls">
-                <button id="startScreenShare" onclick="startScreenShare()" class="control-btn">
-                    <i class="fas fa-desktop"></i> Share Screen
-                </button>
-                <button id="stopScreenShare" onclick="stopScreenShare()" class="control-btn" style="display: none;">
-                    <i class="fas fa-stop"></i> Stop Sharing
-                </button>
-                <button onclick="togglePiP()" class="control-btn">
-                    <i class="fas fa-external-link-alt"></i> Picture-in-Picture
-                </button>
-            </div>
-
-            <div id="videoPlayer" class="video-player">
-                <!-- Video content will be added here -->
-            </div>
-
-            <!-- Enhanced Playback Controls -->
+            <div id="videoPlayer" class="video-player"></div>
             <div class="playback-controls">
                 <div class="primary-controls">
-                    <button onclick="syncPlay()" class="control-btn">
+                    <button onclick="videoControls.play()" class="control-btn">
                         <i class="fas fa-play"></i>
                     </button>
-                    <button onclick="syncPause()" class="control-btn">
+                    <button onclick="videoControls.pause()" class="control-btn">
                         <i class="fas fa-pause"></i>
                     </button>
                     <input type="range" id="timelineSlider" min="0" max="100" value="0">
@@ -423,7 +510,7 @@
                 </div>
                 
                 <div class="secondary-controls">
-                    <button onclick="syncSeekBackward()" class="control-btn">
+                    <button onclick="videoControls.seek(videoElement.currentTime - 10)" class="control-btn">
                         <i class="fas fa-backward"></i> 10s
                     </button>
                     <select onchange="videoControls.setPlaybackSpeed(this.value)">
@@ -432,11 +519,8 @@
                         <option value="1.5">1.5x</option>
                         <option value="2">2x</option>
                     </select>
-                    <button onclick="syncSeekForward()" class="control-btn">
+                    <button onclick="videoControls.seek(videoElement.currentTime + 10)" class="control-btn">
                         10s <i class="fas fa-forward"></i>
-                    </button>
-                    <button onclick="videoControls.takeSnapshot()" class="control-btn">
-                        <i class="fas fa-camera"></i>
                     </button>
                 </div>
 
@@ -452,31 +536,17 @@
             </div>
         </div>
 
-        <!-- Chat Section -->
         <div class="chat-section">
-            <div class="chat-tabs">
-                <button class="active">Chat</button>
-                <button>Files</button>
-            </div>
-            <div class="chat-box">
-                <!-- Chat messages will be added here -->
-            </div>
-            <div class="files-box">
-                <!-- Files will be added here -->
+            <div id="chatBox" class="chat-box"></div>
+            <div class="message-input-container">
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
 
     <!-- Main JavaScript -->
     <script>
-        // Supabase Initialization
-        
-        import { createClient } from '@supabase/supabase-js'
-
-        const supabaseUrl = 'https://pqqxlilkkqnhfsnixtwa.supabase.co'
-     const supabaseKey = process.env.SUPABASE_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
-
         // Global Variables
         let roomId;
         let userName;
@@ -489,85 +559,89 @@ const supabase = createClient(supabaseUrl, supabaseKey)
         let chatChannel;
         let videoStateChannel;
 
-        // Theme Configuration
-        const themes = {
-            default: {
-                primary: '#ff0000',
-                background: '#000000',
-                text: '#ffffff'
+        const characterImages = {
+            backgrounds: {
+                jinx: 'jinx.png',
+                vi: 'vi.jpg',
+                caitlyn: 'caitlyn.jpg',
+                ekko: 'ekko.jpg',
+                silco: 'silco.webp'
             },
-            light: {
-                primary: '#ff4444',
-                background: '#ffffff',
-                text: '#000000'
-            },
-            neon: {
-                primary: '#00ff00',
-                background: '#111111',
-                text: '#00ff00'
+            avatars: {
+                jinx: 'jinx.jpg',
+                vi: 'vi.jpg',
+                caitlyn: 'caitlyn.jpg',
+                ekko: 'ekko.jpg',
+                silco: 'silco.webp'
             }
         };
 
-        // Initialize App
-        async function initializeApp() {
-            try {
-                videoElement = document.createElement('video');
-                videoElement.id = 'mainVideo';
-                document.getElementById('videoPlayer').appendChild(videoElement);
-                
-                setupVideoEventListeners();
-                await initializeSupabase();
-                setupEventListeners();
-                initializeEmojiPicker();
-                
-                console.log('App initialized successfully');
-            } catch (error) {
-                showError('Initialization failed: ' + error.message);
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
+            // Get button elements
+            const createRoomBtn = document.querySelector('.create-room-btn');
+            const joinRoomBtn = document.querySelector('.join-room-btn');
+            const backBtns = document.querySelectorAll('.back-btn');
+            const createRoomForm = document.getElementById('createRoomFormElement');
+            const joinRoomForm = document.getElementById('joinRoomFormElement');
+
+            // Debug log elements
+            console.log('Elements found:', {
+                createRoomBtn,
+                joinRoomBtn,
+                backBtns,
+                createRoomForm,
+                joinRoomForm
+            });
+
+            // Add click event listeners
+            if(createRoomBtn) {
+                createRoomBtn.addEventListener('click', function() {
+                    console.log('Create Room button clicked');
+                    document.getElementById('initialButtons').style.display = 'none';
+                    document.getElementById('createRoomForm').style.display = 'block';
+                });
             }
-        }
 
-        // Supabase Initialization
-        async function initializeSupabase() {
-            try {
-                // Set up real-time subscriptions
-                chatChannel = supabase
-                    .channel('chat')
-                    .on('broadcast', { event: 'message' }, handleNewMessage)
-                    .subscribe();
-
-                videoStateChannel = supabase
-                    .channel('video_state')
-                    .on('broadcast', { event: 'state_change' }, handleVideoStateChange)
-                    .subscribe();
-
-                console.log('Supabase channels initialized');
-            } catch (error) {
-                console.error('Supabase initialization failed:', error);
-                throw error;
+            if(joinRoomBtn) {
+                joinRoomBtn.addEventListener('click', function() {
+                    console.log('Join Room button clicked');
+                    document.getElementById('initialButtons').style.display = 'none';
+                    document.getElementById('joinRoomForm').style.display = 'block';
+                });
             }
-        }
 
-        // Event Listeners Setup
-        function setupVideoEventListeners() {
-            videoElement.addEventListener('loadedmetadata', () => {
-                document.getElementById('duration').textContent = formatTime(videoElement.duration);
-                document.querySelector('.playback-controls').style.display = 'flex';
+            // Add event listeners to all back buttons
+            backBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    console.log('Back button clicked');
+                    document.getElementById('initialButtons').style.display = 'flex';
+                    document.getElementById('createRoomForm').style.display = 'none';
+                    document.getElementById('joinRoomForm').style.display = 'none';
+                });
             });
 
-            videoElement.addEventListener('timeupdate', () => {
-                document.getElementById('currentTime').textContent = formatTime(videoElement.currentTime);
-                document.getElementById('timelineSlider').value = 
-                    (videoElement.currentTime / videoElement.duration) * 100;
-            });
+            // Form submit handlers
+            if(createRoomForm) {
+                createRoomForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    console.log('Create Room form submitted');
+                    await handleCreateRoom(e);
+                });
+            }
 
-            document.getElementById('timelineSlider').addEventListener('input', (e) => {
-                const time = (videoElement.duration * e.target.value) / 100;
-                videoElement.currentTime = time;
-                broadcastVideoState('seek', time);
-            });
-        }
+            if(joinRoomForm) {
+                joinRoomForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    console.log('Join Room form submitted');
+                    await handleJoinRoom(e);
+                });
+            }
+        });
 
-        // Room Management
+        // Room Management Functions
         async function handleCreateRoom(event) {
             event.preventDefault();
             try {
@@ -620,26 +694,124 @@ const supabase = createClient(supabaseUrl, supabaseKey)
             }
         }
 
+        function enterRoom() {
+            document.getElementById('initialForms').style.display = 'none';
+            document.querySelector('.container').style.display = 'grid';
+            if (isAdmin) {
+                document.getElementById('adminControls').style.display = 'block';
+            }
+            initializeRoom();
+        }
+
+        // Utility Functions
+        function showError(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#ff4444",
+            }).showToast();
+        }
+
+        function showSuccess(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#44ff44",
+            }).showToast();
+        }
+
+        // Initialize Room
+        async function initializeRoom() {
+            try {
+                await initializeSupabase();
+                setupVideoPlayer();
+                setupChat();
+                setupEmojiPicker();
+                setupReactions();
+                setupQuickActions();
+                showSuccess('Room initialized successfully');
+            } catch (error) {
+                showError('Failed to initialize room: ' + error.message);
+            }
+        }
+
+        // Add error handling
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            showError('An unexpected error occurred');
+        });
+
         // Video Controls
+        function setupVideoPlayer() {
+            videoElement = document.createElement('video');
+            videoElement.id = 'mainVideo';
+            document.getElementById('videoPlayer').appendChild(videoElement);
+            
+            // Add video event listeners
+            videoElement.addEventListener('loadedmetadata', () => {
+                document.getElementById('duration').textContent = formatTime(videoElement.duration);
+            });
+
+            videoElement.addEventListener('timeupdate', () => {
+                document.getElementById('currentTime').textContent = formatTime(videoElement.currentTime);
+                document.getElementById('timelineSlider').value = 
+                    (videoElement.currentTime / videoElement.duration) * 100;
+            });
+
+            // Initialize controls
+            setupVideoControls();
+        }
+
         const videoControls = {
-            setPlaybackSpeed(speed) {
-                if (!videoElement) return;
-                videoElement.playbackRate = parseFloat(speed);
-                broadcastVideoState('speed', speed);
+            play: async function() {
+                if (videoElement) {
+                    await videoElement.play();
+                    broadcastVideoState('play');
+                }
             },
-            
-            setVolume(volume) {
-                if (!videoElement) return;
-                videoElement.volume = parseFloat(volume);
+
+            pause: async function() {
+                if (videoElement) {
+                    videoElement.pause();
+                    broadcastVideoState('pause');
+                }
             },
-            
-            toggleMute() {
-                if (!videoElement) return;
-                videoElement.muted = !videoElement.muted;
+
+            seek: function(time) {
+                if (videoElement) {
+                    videoElement.currentTime = time;
+                    broadcastVideoState('seek', time);
+                }
             },
-            
-            takeSnapshot() {
+
+            setVolume: function(volume) {
+                if (videoElement) {
+                    videoElement.volume = volume;
+                }
+            },
+
+            setPlaybackSpeed: function(speed) {
+                if (videoElement) {
+                    videoElement.playbackRate = speed;
+                    broadcastVideoState('speed', speed);
+                }
+            },
+
+            toggleMute: function() {
+                if (videoElement) {
+                    videoElement.muted = !videoElement.muted;
+                }
+            },
+
+            takeSnapshot: function() {
                 if (!videoElement) return;
+                
                 const canvas = document.createElement('canvas');
                 canvas.width = videoElement.videoWidth;
                 canvas.height = videoElement.videoHeight;
@@ -653,47 +825,6 @@ const supabase = createClient(supabaseUrl, supabaseKey)
             }
         };
 
-        // Video State Management
-        async function broadcastVideoState(action, value = null) {
-            try {
-                await videoStateChannel.send({
-                    type: 'broadcast',
-                    event: 'state_change',
-                    payload: {
-                        action,
-                        value,
-                        sender: userName
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to broadcast video state:', error);
-            }
-        }
-
-        function handleVideoStateChange(payload) {
-            const { action, value, sender } = payload;
-            if (sender === userName) return;
-
-            switch (action) {
-                case 'play':
-                    videoElement?.play();
-                    break;
-                case 'pause':
-                    videoElement?.pause();
-                    break;
-                case 'seek':
-                    if (videoElement && value !== null) {
-                        videoElement.currentTime = value;
-                    }
-                    break;
-                case 'speed':
-                    if (videoElement && value !== null) {
-                        videoElement.playbackRate = value;
-                    }
-                    break;
-            }
-        }
-
         // Screen Sharing
         async function startScreenShare() {
             try {
@@ -705,6 +836,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                 document.getElementById('startScreenShare').style.display = 'none';
                 document.getElementById('stopScreenShare').style.display = 'block';
                 isScreenSharing = true;
+                showSuccess('Screen sharing started');
             } catch (error) {
                 showError('Failed to start screen sharing: ' + error.message);
             }
@@ -718,13 +850,31 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                 document.getElementById('startScreenShare').style.display = 'block';
                 document.getElementById('stopScreenShare').style.display = 'none';
                 isScreenSharing = false;
+                showSuccess('Screen sharing stopped');
             }
         }
 
-        // Chat and File Sharing Functions
+        // Chat Functions
+        function setupChat() {
+            const messageInput = document.getElementById('messageInput');
+            const chatBox = document.getElementById('chatBox');
+
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Initialize emoji picker
+            setupEmojiPicker();
+        }
+
         async function sendMessage(content = null, type = 'text') {
             try {
-                const messageContent = content || document.getElementById('messageInput').value.trim();
+                const messageInput = document.getElementById('messageInput');
+                const messageContent = content || messageInput.value.trim();
+                
                 if (!messageContent) return;
 
                 await chatChannel.send({
@@ -739,8 +889,10 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                 });
 
                 if (type === 'text') {
-                    document.getElementById('messageInput').value = '';
+                    messageInput.value = '';
                 }
+
+                showSuccess('Message sent');
             } catch (error) {
                 showError('Failed to send message: ' + error.message);
             }
@@ -769,22 +921,16 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                         <span class="timestamp">${formatTimestamp(timestamp)}</span>
                     `;
                     break;
-                case 'reaction':
-                    messageDiv.innerHTML = `
-                        <span class="reaction-message">
-                            ${sender} reacted with ${content}
-                        </span>
-                    `;
-                    break;
             }
 
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // File Handling
+        // File Sharing
         async function handleFileShare(event) {
             const files = event.target.files || event.dataTransfer.files;
+            
             for (const file of files) {
                 try {
                     const { data, error } = await supabase.storage
@@ -803,55 +949,10 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                         size: file.size
                     }, 'file');
 
+                    showSuccess('File shared successfully');
                 } catch (error) {
-                    showError(`Failed to upload ${file.name}: ${error.message}`);
+                    showError(`Failed to share file: ${error.message}`);
                 }
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-            event.currentTarget.classList.add('drag-over');
-        }
-
-        function handleDragLeave(event) {
-            event.currentTarget.classList.remove('drag-over');
-        }
-
-        function handleFileDrop(event) {
-            event.preventDefault();
-            event.currentTarget.classList.remove('drag-over');
-            handleFileShare(event);
-        }
-
-        // Room Settings and Analytics
-        async function updateRoomSettings(settings) {
-            try {
-                const { error } = await supabase
-                    .from('rooms')
-                    .update(settings)
-                    .eq('id', roomId);
-
-                if (error) throw error;
-                showSuccess('Room settings updated successfully');
-            } catch (error) {
-                showError('Failed to update room settings: ' + error.message);
-            }
-        }
-
-        async function loadAnalytics() {
-            try {
-                const { data, error } = await supabase
-                    .from('room_analytics')
-                    .select('*')
-                    .eq('room_id', roomId);
-
-                if (error) throw error;
-
-                const analyticsContent = document.getElementById('analyticsContent');
-                analyticsContent.innerHTML = generateAnalyticsHTML(data);
-            } catch (error) {
-                showError('Failed to load analytics: ' + error.message);
             }
         }
 
@@ -883,78 +984,243 @@ const supabase = createClient(supabaseUrl, supabaseKey)
                 .replace(/'/g, "&#039;");
         }
 
-        function showError(message) {
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#ff4444",
-            }).showToast();
+        // Emoji Picker Setup
+        function setupEmojiPicker() {
+            const emojiButton = document.createElement('button');
+            emojiButton.className = 'emoji-button';
+            emojiButton.innerHTML = '😊';
+            emojiButton.onclick = toggleEmojiPicker;
+
+            const messageInputContainer = document.querySelector('.message-input-container');
+            messageInputContainer.insertBefore(emojiButton, messageInputContainer.firstChild);
+
+            // Create emoji picker container
+            const emojiPicker = document.createElement('div');
+            emojiPicker.id = 'emojiPicker';
+            emojiPicker.className = 'emoji-picker';
+            emojiPicker.style.display = 'none';
+            
+            // Add common emojis
+            const commonEmojis = ['😊', '😂', '❤️', '👍', '😎', '🎉', '🔥', '😢', '🤔', '😍', 
+                                '👋', '🙌', '👏', '🎮', '🍿', '🎬', '⏰', '⭐', '🎵', '💬'];
+            
+            commonEmojis.forEach(emoji => {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = emoji;
+                emojiSpan.onclick = () => addEmoji(emoji);
+                emojiPicker.appendChild(emojiSpan);
+            });
+
+            messageInputContainer.appendChild(emojiPicker);
         }
 
-        function showSuccess(message) {
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#44ff44",
-            }).showToast();
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
         }
 
-        // Theme Management
-        function applyTheme(themeName) {
-            const theme = themes[themeName];
-            if (!theme) return;
-
-            document.documentElement.style.setProperty('--primary-color', theme.primary);
-            document.documentElement.style.setProperty('--background-color', theme.background);
-            document.documentElement.style.setProperty('--text-color', theme.text);
-            currentTheme = themeName;
+        function addEmoji(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value += emoji;
+            messageInput.focus();
         }
 
-        // UI State Management
-        function showCreateRoomForm() {
-            console.log('Showing create room form'); // Debug log
-            document.getElementById('initialButtons').style.display = 'none';
-            document.getElementById('createRoomForm').style.display = 'block';
+        // Reactions System
+        function setupReactions() {
+            const reactionBar = document.createElement('div');
+            reactionBar.className = 'reaction-bar';
+            
+            const reactions = ['👍', '❤️', '😂', '😮', '😢', '👏'];
+            
+            reactions.forEach(reaction => {
+                const button = document.createElement('button');
+                button.className = 'reaction-btn';
+                button.innerHTML = `${reaction} <span class="reaction-count">0</span>`;
+                button.onclick = () => sendReaction(reaction);
+                reactionBar.appendChild(button);
+            });
+
+            document.querySelector('.video-section').appendChild(reactionBar);
         }
 
-        function showJoinRoomForm() {
-            console.log('Showing join room form'); // Debug log
-            document.getElementById('initialButtons').style.display = 'none';
-            document.getElementById('joinRoomForm').style.display = 'block';
-        }
+        async function sendReaction(emoji) {
+            try {
+                const reaction = {
+                    emoji,
+                    sender: userName,
+                    timestamp: new Date().toISOString()
+                };
 
-        function showInitialButtons() {
-            console.log('Showing initial buttons'); // Debug log
-            document.getElementById('initialButtons').style.display = 'flex';
-            document.getElementById('createRoomForm').style.display = 'none';
-            document.getElementById('joinRoomForm').style.display = 'none';
-        }
+                await chatChannel.send({
+                    type: 'broadcast',
+                    event: 'reaction',
+                    payload: reaction
+                });
 
-        function enterRoom() {
-            document.getElementById('initialForms').style.display = 'none';
-            document.querySelector('.container').style.display = 'grid';
-            if (isAdmin) {
-                document.getElementById('adminControls').style.display = 'block';
+                showReactionAnimation(emoji);
+            } catch (error) {
+                showError('Failed to send reaction: ' + error.message);
             }
         }
 
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click event listeners
-            document.querySelector('[onclick="showCreateRoomForm()"]')?.addEventListener('click', showCreateRoomForm);
-            document.querySelector('[onclick="showJoinRoomForm()"]')?.addEventListener('click', showJoinRoomForm);
+        function showReactionAnimation(emoji) {
+            const reaction = document.createElement('div');
+            reaction.className = 'floating-reaction';
+            reaction.textContent = emoji;
             
-            // Initialize Supabase channels
-            initializeSupabase().catch(error => {
-                console.error('Failed to initialize Supabase:', error);
-                showError('Failed to initialize: ' + error.message);
+            const videoPlayer = document.querySelector('.video-player');
+            videoPlayer.appendChild(reaction);
+
+            // Random position from bottom
+            const startX = Math.random() * (videoPlayer.offsetWidth - 50);
+            reaction.style.left = `${startX}px`;
+
+            // Animate and remove
+            setTimeout(() => reaction.remove(), 1000);
+        }
+
+        // Quick Actions Menu
+        function setupQuickActions() {
+            const quickActions = document.createElement('div');
+            quickActions.className = 'quick-actions';
+            
+            const actions = [
+                { icon: 'fa-camera', label: 'Screenshot', action: videoControls.takeSnapshot },
+                { icon: 'fa-external-link-alt', label: 'PiP', action: togglePiP },
+                { icon: 'fa-closed-captioning', label: 'CC', action: toggleCaptions },
+                { icon: 'fa-expand', label: 'Fullscreen', action: toggleFullscreen }
+            ];
+
+            actions.forEach(({ icon, label, action }) => {
+                const button = document.createElement('button');
+                button.className = 'quick-action-btn';
+                button.innerHTML = `<i class="fas ${icon}"></i>`;
+                button.title = label;
+                button.onclick = action;
+                quickActions.appendChild(button);
             });
+
+            document.querySelector('.video-section').appendChild(quickActions);
+        }
+
+        // Picture in Picture
+        async function togglePiP() {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    await videoElement.requestPictureInPicture();
+                }
+            } catch (error) {
+                showError('PiP failed: ' + error.message);
+            }
+        }
+
+        // Captions
+        async function toggleCaptions() {
+            try {
+                if (videoElement.textTracks.length === 0) {
+                    const track = videoElement.addTextTrack('captions', 'English', 'en');
+                    track.mode = 'showing';
+                } else {
+                    const track = videoElement.textTracks[0];
+                    track.mode = track.mode === 'showing' ? 'hidden' : 'showing';
+                }
+            } catch (error) {
+                showError('Caption toggle failed: ' + error.message);
+            }
+        }
+
+        // Fullscreen
+        function toggleFullscreen() {
+            try {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    const videoContainer = document.querySelector('.video-section');
+                    videoContainer.requestFullscreen();
+                }
+            } catch (error) {
+                showError('Fullscreen toggle failed: ' + error.message);
+            }
+        }
+
+        // Theme Management
+        const themes = {
+            jinx: {
+                primary: '#ff69b4',
+                background: '#000000',
+                text: '#ffffff',
+                characterName: 'Jinx',
+                quote: "I'm crazy! Got a doctor's note."
+            },
+            vi: {
+                primary: '#9370db',
+                background: '#000000',
+                text: '#ffffff',
+                characterName: 'Vi',
+                quote: "I can handle myself."
+            },
+            caitlyn: {
+                primary: '#4169e1',
+                background: '#000000',
+                text: '#ffffff',
+                characterName: 'Caitlyn',
+                quote: "I'm on the case."
+            },
+            ekko: {
+                primary: '#32cd32',
+                background: '#000000',
+                text: '#ffffff',
+                characterName: 'Ekko',
+                quote: "Time to make history."
+            },
+            silco: {
+                primary: '#dc143c',
+                background: '#000000',
+                text: '#ffffff',
+                characterName: 'Silco',
+                quote: "Loyalty. That's what matters."
+            }
+        };
+
+        function setTheme(themeName) {
+            // Remove all existing theme classes
+            document.body.classList.remove('theme-jinx', 'theme-vi', 'theme-caitlyn', 'theme-ekko', 'theme-silco');
+            
+            // Add new theme class
+            document.body.classList.add(`theme-${themeName}`);
+            
+            // Update theme variables
+            const theme = themes[themeName];
+            document.documentElement.style.setProperty('--primary-color', theme.primary);
+            document.documentElement.style.setProperty('--background-color', theme.background);
+            document.documentElement.style.setProperty('--text-color', theme.text);
+
+            // Update active state in theme selector
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`.theme-option[onclick="setTheme('${themeName}')"]`).classList.add('active');
+
+            // Show character quote
+            showCharacterQuote(theme.characterName, theme.quote);
+        }
+
+        function showCharacterQuote(character, quote) {
+            Toastify({
+                text: `${character}: "${quote}"`,
+                duration: 3000,
+                gravity: "top",
+                position: "center",
+                backgroundColor: "var(--primary-color)",
+                className: "character-quote"
+            }).showToast();
+        }
+
+        // Initialize default theme
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme('jinx'); // Set default theme
         });
     </script>
 </body>
