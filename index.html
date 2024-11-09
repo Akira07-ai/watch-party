@@ -16,7 +16,7 @@
     <script>
         const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
         const supabaseKey = process.env.REACT_APP_ANON_KEY;
-        window.supabase = createClient(supabaseUrl, supabaseKey); // Store in window object
+        const supabase = createClient(supabaseUrl, supabaseKey); // Store in window object
     </script>
 
     <!-- Your existing styles here -->
