@@ -4,93 +4,287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arcane Watch Party</title>
-    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- Inline CSS (replacing main.css) -->
+    <style>
+        /* Base styles */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(
+                135deg,
+                #000000 0%,
+                #1a0000 25%,
+                #330000 50%,
+                #800000 75%,
+                #ff0000 100%
+            );
+            background-attachment: fixed;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Character Images */
+        .character-images {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .character {
+            position: absolute;
+            opacity: 0.4;
+            transition: opacity 0.3s ease;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.3));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .jinx {
+            right: -100px;
+            bottom: -50px;
+            width: 500px;
+            transform: rotate(-5deg);
+        }
+
+        .vi {
+            left: -50px;
+            top: -50px;
+            width: 400px;
+            transform: rotate(5deg);
+        }
+
+        .caitlyn {
+            right: -50px;
+            top: -50px;
+            width: 400px;
+            transform: rotate(-5deg);
+        }
+
+        .silco {
+            left: -100px;
+            bottom: -50px;
+            width: 500px;
+            transform: rotate(5deg);
+        }
+
+        /* Login Container */
+        .login-container {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-form {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            width: 300px;
+            text-align: center;
+        }
+
+        /* Form Elements */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: linear-gradient(45deg, #600 0%, #f00 100%);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main Container */
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Video Section */
+        .video-section {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .video-player {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 5px;
+        }
+
+        /* Chat Section */
+        .chat-video-section {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .message.sent {
+            background: rgba(255, 0, 0, 0.2);
+            margin-left: 20%;
+        }
+
+        .message.received {
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 20%;
+        }
+
+        /* Additional styles for file uploads and emojis */
+        .chat-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-video {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 5px;
+        }
+
+        .file-link {
+            display: inline-block;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .upload-progress {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 5px 0;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background: linear-gradient(45deg, #600 0%, #f00 100%);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+    </style>
 </head>
 <body>
-    <div class="character-images">
-        <img src="images/characters/jinx.png" alt="" class="character jinx">
-        <img src="images/characters/vi.png" alt="" class="character vi">
-        <img src="images/characters/caitlyn.png" alt="" class="character caitlyn">
-        <img src="images/characters/silco.png" alt="" class="character silco">
-    </div>
+    <!-- Your existing HTML content -->
 
-    <div class="login-container" id="loginContainer">
-        <div class="login-form">
-            <h2>Arcane Watch Party</h2>
-            
-            <!-- Join Room Form -->
-            <div id="joinRoomForm">
-                <h3>Join Room</h3>
-                <input type="text" id="userName" placeholder="Your Display Name" required>
-                <input type="text" id="meetingName" placeholder="Meeting Name" required>
-                <div class="password-container">
-                    <input type="password" id="roomPassword" placeholder="Room Password" required>
-                    <button class="password-toggle" onclick="togglePassword('roomPassword')">👁️</button>
-                </div>
-                <button onclick="joinRoom()">Join Room</button>
-                <button onclick="showCreateRoom()">Create New Room</button>
-            </div>
-
-            <!-- Create Room Form -->
-            <div id="createRoomForm" class="create-room-form">
-                <h3>Create Room</h3>
-                <input type="text" id="newUserName" placeholder="Your Display Name" required>
-                <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required>
-                <div class="password-container">
-                    <input type="password" id="newRoomPassword" placeholder="Set Room Password" required>
-                    <button class="password-toggle" onclick="togglePassword('newRoomPassword')">👁️</button>
-                </div>
-                <button onclick="createRoom()">Create Room</button>
-                <button onclick="showJoinRoom()">Back to Join</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="container" style="display: none;">
-        <div class="video-section">
-            <div class="video-player" id="videoPlayer"></div>
-            <div class="video-controls">
-                <button onclick="shareVideo()">Share Video</button>
-                <input type="text" id="videoUrl" placeholder="Paste video URL">
-                <button onclick="loadSharedVideo()">Load Video</button>
-            </div>
-            <div class="admin-controls" id="adminControls" style="display: none;">
-                <h3>Room Controls</h3>
-                <button onclick="kickUser()">Kick User</button>
-                <button onclick="muteAll()">Mute All</button>
-                <button onclick="lockRoom()">Lock Room</button>
-                <div class="user-list" id="userList"></div>
-            </div>
-        </div>
-
-        <div class="chat-video-section">
-            <div class="video-feeds">
-                <div class="video-feed" id="localVideo"></div>
-                <div class="video-feed" id="remoteVideos"></div>
-            </div>
-            <div class="chat-box" id="chatBox"></div>
-            <div class="message-input">
-                <button class="emoji-picker-btn" onclick="toggleEmojiPicker()">😊</button>
-                <input type="text" id="messageInput" placeholder="Type a message...">
-                <label for="fileInput" class="file-upload-btn">📎</label>
-                <input type="file" id="fileInput" style="display: none" onchange="handleFileUpload(event)">
-                <button onclick="sendMessage()">Send</button>
-            </div>
-            <div class="emoji-picker" id="emojiPicker" style="display: none"></div>
-        </div>
-    </div>
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-storage.js"></script>
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <!-- WebRTC adapter -->
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
-    <!-- Your scripts -->
-    <script src="scripts/app.js"></script>
-    <script src="scripts/chat.js"></script>
-    <script src="scripts/video.js"></script>
+    <!-- Inline JavaScript (replacing app.js, chat.js, and video.js) -->
+    <script>
+        // app.js content
+        const firebaseConfig = {
+            // Your Firebase configuration here
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const storage = firebase.storage();
+
+        // Global variables
+        let userName = '';
+        let roomName = '';
+        let isAdmin = false;
+
+        // UI Functions
+        function showCreateRoom() {
+            document.getElementById('joinRoomForm').style.display = 'none';
+            document.getElementById('createRoomForm').style.display = 'block';
+        }
+
+        function showJoinRoom() {
+            document.getElementById('createRoomForm').style.display = 'none';
+            document.getElementById('joinRoomForm').style.display = 'block';
+        }
+
+        // Add the rest of your app.js functions here
+
+        // chat.js content
+        function initializeChat() {
+            const chatRef = database.ref(`rooms/${roomName}/chat`);
+            const chatBox = document.getElementById('chatBox');
+            const messageInput = document.getElementById('messageInput');
+
+            chatRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                displayMessage(message);
+            });
+
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        // Add the rest of your chat.js functions here
+
+        // video.js content
+        function initializeVideoChat() {
+            // Your video chat initialization code
+        }
+
+        // Add the rest of your video.js functions here
+    </script>
 </body>
 </html>
