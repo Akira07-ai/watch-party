@@ -1,13 +1,23 @@
 // Your Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyBT6qPRvbKJmOOPaFOrQTsQaQU0DYsOvZA",
-    authDomain: "watch-party-89042.firebaseapp.com",
-    databaseURL: "https://watch-party-89042-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "watch-party-89042",
-    storageBucket: "watch-party-89042.firebasestorage.app",
-    messagingSenderId: "801694983399",
-    appId: "1:801694983399:web:c447062755a620e4d56e42",
-    measurementId: "G-CD01CFSLM1"
+    const firebaseConfig = {
+
+  apiKey: "AIzaSyBT6qPRvbKJmOOPaFOrQTsQaQU0DYsOvZA",
+
+  authDomain: "watch-party-89042.firebaseapp.com",
+
+  databaseURL: "https://watch-party-89042-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+  projectId: "watch-party-89042",
+
+  storageBucket: "watch-party-89042.firebasestorage.app",
+
+  messagingSenderId: "801694983399",
+
+  appId: "1:801694983399:web:32ac147c52f19e4bd56e42",
+
+  measurementId: "G-2VB13DYW85"
+
 };
 
 // Initialize Firebase (with storage)
