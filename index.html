@@ -1084,6 +1084,129 @@
             console.error('Failed to broadcast video state:', error);
         }
     }
+
+    // Add this after your global variables and before other functions
+    async function initializeSupabase() {
+        try {
+            // Set up real-time subscriptions
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            // Subscribe to room changes
+            const roomChannel = supabase
+                .channel('room_changes')
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'rooms'
+                }, handleRoomChange)
+                .subscribe();
+
+            // Subscribe to video state changes
+            const videoChannel = supabase
+                .channel('video_states')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'video_states'
+                }, handleVideoStateChange)
+                .subscribe();
+
+            // Subscribe to chat messages
+            const chatChannel = supabase
+                .channel('chat_messages')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'messages'
+                }, handleNewMessage)
+                .subscribe();
+
+            console.log('Supabase initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+            throw new Error('Failed to initialize Supabase: ' + error.message);
+        }
+    }
+
+    // Add these handler functions
+    async function handleRoomChange(payload) {
+        const { eventType, new: newRoom, old: oldRoom } = payload;
+        
+        if (eventType === 'DELETE' && oldRoom.id === roomId) {
+            // Room was deleted
+            showError('Room has been deleted');
+            window.location.reload();
+        } else if (eventType === 'UPDATE' && newRoom.id === roomId) {
+            // Room was updated
+            // Handle room updates (e.g., password change, settings change)
+            if (isAdmin) {
+                console.log('Room updated:', newRoom);
+            }
+        }
+    }
+
+    async function handleVideoStateChange(payload) {
+        const { new: state } = payload;
+        
+        // Ignore own broadcasts
+        if (state.sender === userName) return;
+        
+        // Handle different video state changes
+        switch (state.action) {
+            case 'play':
+                videoElement?.play();
+                break;
+            case 'pause':
+                videoElement?.pause();
+                break;
+            case 'seek':
+                if (videoElement && state.value !== null) {
+                    videoElement.currentTime = state.value;
+                }
+                break;
+            case 'speed':
+                if (videoElement && state.value !== null) {
+                    videoElement.playbackRate = state.value;
+                }
+                break;
+        }
+    }
+
+    async function handleNewMessage(payload) {
+        const { new: message } = payload;
+        
+        // Only handle messages for current room
+        if (message.room_id !== roomId) return;
+        
+        // Add message to chat
+        addMessageToChat(message);
+    }
+
+    function addMessageToChat(message) {
+        const chatBox = document.getElementById('chatBox');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${message.sender === userName ? 'sent' : 'received'}`;
+        
+        // Handle different message types
+        switch (message.type) {
+            case 'text':
+                messageDiv.textContent = `${message.sender}: ${message.content}`;
+                break;
+            case 'file':
+                const fileLink = document.createElement('a');
+                fileLink.href = message.content;
+                fileLink.textContent = `📎 ${message.sender} shared a file`;
+                fileLink.target = '_blank';
+                messageDiv.appendChild(fileLink);
+                break;
+            case 'reaction':
+                messageDiv.textContent = `${message.sender} reacted with ${message.content}`;
+                break;
+        }
+        
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
     </script>
 </body>
 </html>
