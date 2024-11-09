@@ -164,7 +164,8 @@
         .create-room-form {
             display: none;
         }
-                /* Main Container */
+
+        /* Main Container */
         .container {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -406,10 +407,10 @@
 </head>
 <body>
     <div class="character-images">
-        <img src="images/characters/jinx.png" alt="" class="character jinx">
-        <img src="images/characters/vi.jpg" alt="" class="character vi">
-        <img src="images/characters/caitlyn.jpg" alt="" class="character caitlyn">
-        <img src="images/characters/silco.webp" alt="" class="character silco">
+        <img src="jinx.png" alt="" class="character jinx">
+        <img src="vi.jpg" alt="" class="character vi">
+        <img src="caitlyn.jpg" alt="" class="character caitlyn">
+        <img src="silco.webp" alt="" class="character silco">
     </div>
 
     <div class="login-container" id="loginContainer">
@@ -489,14 +490,25 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "your-api-key",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "your-database-url",
-            projectId: "your-project-id",
-            storageBucket: "your-storage-bucket",
-            messagingSenderId: "your-sender-id",
-            appId: "your-app-id"
-        };
+
+            apiKey: "AIzaSyBT6qPRvbKJmOOPaFOrQTsQaQU0DYsOvZA",
+          
+            authDomain: "watch-party-89042.firebaseapp.com",
+          
+            databaseURL: "https://watch-party-89042-default-rtdb.asia-southeast1.firebasedatabase.app",
+          
+            projectId: "watch-party-89042",
+          
+            storageBucket: "watch-party-89042.firebasestorage.app",
+          
+            messagingSenderId: "801694983399",
+          
+            appId: "1:801694983399:web:32ac147c52f19e4bd56e42",
+          
+            measurementId: "G-2VB13DYW85"
+          
+          };
+          
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -506,7 +518,9 @@
         // Global variables
         let userName = '';
         let roomName = '';
-        let isAdmin = false;        // UI Functions
+        let isAdmin = false;
+
+        // UI Functions
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             input.type = input.type === 'password' ? 'text' : 'password';
@@ -678,7 +692,8 @@
             chatBox.appendChild(messageElement);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-                // File Upload Functions
+
+        // File Upload Functions
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
