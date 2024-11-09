@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Watch Party</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div class="character-images">
+        <img src="images/characters/jinx.png" alt="" class="character jinx">
+        <img src="images/characters/vi.png" alt="" class="character vi">
+        <img src="images/characters/caitlyn.png" alt="" class="character caitlyn">
+        <img src="images/characters/silco.png" alt="" class="character silco">
+    </div>
+
+    <div class="login-container" id="loginContainer">
+        <div class="login-form">
+            <h2>Arcane Watch Party</h2>
+            
+            <!-- Join Room Form -->
+            <div id="joinRoomForm">
+                <h3>Join Room</h3>
+                <input type="text" id="userName" placeholder="Your Display Name" required>
+                <input type="text" id="meetingName" placeholder="Meeting Name" required>
+                <div class="password-container">
+                    <input type="password" id="roomPassword" placeholder="Room Password" required>
+                    <button class="password-toggle" onclick="togglePassword('roomPassword')">👁️</button>
+                </div>
+                <button onclick="joinRoom()">Join Room</button>
+                <button onclick="showCreateRoom()">Create New Room</button>
+            </div>
+
+            <!-- Create Room Form -->
+            <div id="createRoomForm" class="create-room-form">
+                <h3>Create Room</h3>
+                <input type="text" id="newUserName" placeholder="Your Display Name" required>
+                <input type="text" id="newMeetingName" placeholder="Set Meeting Name" required>
+                <div class="password-container">
+                    <input type="password" id="newRoomPassword" placeholder="Set Room Password" required>
+                    <button class="password-toggle" onclick="togglePassword('newRoomPassword')">👁️</button>
+                </div>
+                <button onclick="createRoom()">Create Room</button>
+                <button onclick="showJoinRoom()">Back to Join</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;">
+        <div class="video-section">
+            <div class="video-player" id="videoPlayer"></div>
+            <div class="video-controls">
+                <button onclick="shareVideo()">Share Video</button>
+                <input type="text" id="videoUrl" placeholder="Paste video URL">
+                <button onclick="loadSharedVideo()">Load Video</button>
+            </div>
+            <div class="admin-controls" id="adminControls" style="display: none;">
+                <h3>Room Controls</h3>
+                <button onclick="kickUser()">Kick User</button>
+                <button onclick="muteAll()">Mute All</button>
+                <button onclick="lockRoom()">Lock Room</button>
+                <div class="user-list" id="userList"></div>
+            </div>
+        </div>
+
+        <div class="chat-video-section">
+            <div class="video-feeds">
+                <div class="video-feed" id="localVideo"></div>
+                <div class="video-feed" id="remoteVideos"></div>
+            </div>
+            <div class="chat-box" id="chatBox"></div>
+            <div class="message-input">
+                <button class="emoji-picker-btn" onclick="toggleEmojiPicker()">😊</button>
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <label for="fileInput" class="file-upload-btn">📎</label>
+                <input type="file" id="fileInput" style="display: none" onchange="handleFileUpload(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+            <div class="emoji-picker" id="emojiPicker" style="display: none"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-storage.js"></script>
+
+    <!-- WebRTC adapter -->
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+    <!-- Your scripts -->
+    <script src="scripts/app.js"></script>
+    <script src="scripts/chat.js"></script>
+    <script src="scripts/video.js"></script>
+</body>
+</html>
