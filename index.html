@@ -31,6 +31,7 @@
             font-family: 'Arial', sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
+            transition: background-color 0.3s ease;
         }
 
         .container {
@@ -39,6 +40,8 @@
             height: 100vh;
             gap: var(--spacing-md);
             padding: var(--spacing-md);
+            position: relative;
+            z-index: 1;
         }
 
         .video-container {
@@ -126,6 +129,8 @@
             align-items: center;
             height: 100vh;
             gap: var(--spacing-lg);
+            position: relative;
+            z-index: 1;
         }
 
         .form-container {
@@ -150,73 +155,65 @@
             color: var(--text-color);
         }
 
-        .reactions {
-            display: flex;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-sm);
+        /* Character Backgrounds and Themes */
+        .jinx-bg {
+            background: url('jinx.png') right bottom no-repeat,
+                        linear-gradient(45deg, #00ffff, #1a1a2e);
+            background-size: contain;
         }
 
-        .reaction-btn {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 4px;
-            transition: transform 0.2s;
+        .ekko-bg {
+            background: url('ekko.jpg') left bottom no-repeat,
+                        linear-gradient(45deg, #7cba3d, #2c2c54);
+            background-size: contain;
         }
 
-        .reaction-btn:hover {
-            transform: scale(1.2);
+        .silco-bg {
+            background: url('silco.webp') right bottom no-repeat,
+                        linear-gradient(45deg, #32cd32, #191970);
+            background-size: contain;
         }
 
-        .floating-reaction {
+        .vi-bg {
+            background: url('vi.jpg') left bottom no-repeat,
+                        linear-gradient(45deg, #ff69b4, #2c2c54);
+            background-size: contain;
+        }
+
+        .caitlyn-bg {
+            background: url('caitlyn.jpg') right bottom no-repeat,
+                        linear-gradient(45deg, #4169e1, #191970);
+            background-size: contain;
+        }
+
+        /* Character Theme Selector */
+        .character-theme-selector {
             position: fixed;
-            animation: float 1s ease-out forwards;
-            pointer-events: none;
-            font-size: 2em;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 100;
         }
 
-        @keyframes float {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-        }
-
-        .theme-toggle {
-            position: fixed;
-            top: var(--spacing-md);
-            right: var(--spacing-md);
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 1.5em;
-        }
-
-        .file-upload button {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            padding: var(--spacing-sm);
-        }
-
-        .file-link {
-            color: var(--primary-color);
-            text-decoration: none;
+        .character-options {
             display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
+            gap: 15px;
         }
 
-        #adminControls {
-            display: none;
-            margin-top: var(--spacing-md);
+        .character-btn {
+            background: none;
+            border: 2px solid transparent;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .character-btn:hover {
+            transform: translateY(-5px);
         }
     </style>
 </head>
@@ -275,16 +272,40 @@
         </div>
     </div>
 
-    <button class="theme-toggle" onclick="toggleTheme()">
-        <i class="fas fa-moon"></i>
-    </button>
+    <div class="character-theme-selector">
+        <div class="character-options">
+            <button onclick="setCharacterTheme('jinx')" class="character-btn jinx">
+                <i class="fas fa-bomb"></i>
+                <span>Jinx</span>
+            </button>
+            <button onclick="setCharacterTheme('ekko')" class="character-btn ekko">
+                <i class="fas fa-clock"></i>
+                <span>Ekko</span>
+            </button>
+            <button onclick="setCharacterTheme('silco')" class="character-btn silco">
+                <i class="fas fa-flask"></i>
+                <span>Silco</span>
+            </button>
+            <button onclick="setCharacterTheme('vi')" class="character-btn vi">
+                <i class="fas fa-fist-raised"></i>
+                <span>Vi</span>
+            </button>
+            <button onclick="setCharacterTheme('caitlyn')" class="character-btn caitlyn">
+                <i class="fas fa-crosshairs"></i>
+                <span>Caitlyn</span>
+            </button>
+        </div>
+    </div>
 
     <script>
-        // Initialize Appwrite with your IDs
+        // Initialize Appwrite
         const client = new Appwrite();
         client
             .setEndpoint('https://cloud.appwrite.io/v1')
             .setProject('672fc0e90039900958a6');
+
+        // Import required Appwrite utilities
+        const { ID, Query } = Appwrite;
 
         // Initialize services
         const databases = new Appwrite.Databases(client);
@@ -303,10 +324,12 @@
         let isAdmin = false;
 
         // Event Listeners
-        document.getElementById('createRoomForm').addEventListener('submit', handleCreateRoom);
-        document.getElementById('joinRoomForm').addEventListener('submit', handleJoinRoom);
-        document.getElementById('messageInput').addEventListener('keypress', handleMessageKeyPress);
-        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('createRoomForm').addEventListener('submit', handleCreateRoom);
+            document.getElementById('joinRoomForm').addEventListener('submit', handleJoinRoom);
+            document.getElementById('messageInput').addEventListener('keypress', handleMessageKeyPress);
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+        });
 
         // Room Management Functions
         async function handleCreateRoom(event) {
@@ -315,6 +338,8 @@
                 userName = document.getElementById('newUserName').value;
                 const roomName = document.getElementById('newMeetingName').value;
                 const password = document.getElementById('newRoomPassword').value;
+
+                console.log('Creating room:', { userName, roomName }); // Debug log
 
                 const document = await databases.createDocument(
                     DATABASE_ID,
@@ -328,11 +353,14 @@
                     }
                 );
 
+                console.log('Room created:', document); // Debug log
+
                 roomId = document.$id;
                 isAdmin = true;
                 enterRoom();
                 showSuccess('Room created successfully!');
             } catch (error) {
+                console.error('Room creation error:', error);
                 showError('Failed to create room: ' + error.message);
             }
         }
@@ -362,42 +390,16 @@
                 enterRoom();
                 showSuccess('Joined room successfully!');
             } catch (error) {
+                console.error('Join room error:', error);
                 showError('Failed to join room: ' + error.message);
             }
         }
 
         // Chat Functions
-        function setupChat() {
-            client.subscribe(`databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`, 
-                response => {
-                    if (response.events.includes('databases.*.collections.*.documents.*.create')) {
-                        handleNewMessage(response.payload);
-                    }
-                }
-            );
-
-            client.subscribe(`databases.${DATABASE_ID}.collections.${REACTIONS_COLLECTION_ID}.documents`, 
-                response => {
-                    if (response.events.includes('databases.*.collections.*.documents.*.create')) {
-                        handleNewReaction(response.payload);
-                    }
-                }
-            );
-        }
-
-        async function handleMessageKeyPress(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                await sendMessage();
-            }
-        }
-
         async function sendMessage(content = null, type = 'text') {
             try {
-                const messageInput = document.getElementById('messageInput');
-                const messageContent = content || messageInput.value.trim();
-                
-                if (!messageContent) return;
+                const messageContent = content || document.getElementById('messageInput').value;
+                if (!messageContent.trim()) return;
 
                 await databases.createDocument(
                     DATABASE_ID,
@@ -406,24 +408,34 @@
                     {
                         room_id: roomId,
                         type: type,
-                        content: messageContent,
+                        content: typeof messageContent === 'object' ? 
+                                JSON.stringify(messageContent) : messageContent,
                         sender: userName,
                         timestamp: new Date().toISOString()
                     }
                 );
 
                 if (type === 'text') {
-                    messageInput.value = '';
+                    document.getElementById('messageInput').value = '';
                 }
             } catch (error) {
                 showError('Failed to send message: ' + error.message);
             }
         }
 
+        function handleMessageKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
         // File Handling
         async function handleFileUpload(event) {
-            const file = event.target.files[0];
             try {
+                const file = event.target.files[0];
+                if (!file) return;
+
                 const uploadedFile = await storage.createFile(
                     STORAGE_BUCKET_ID,
                     ID.unique(),
@@ -447,34 +459,54 @@
             }
         }
 
-        // Reactions System
-        async function sendReaction(emoji) {
-            try {
-                await databases.createDocument(
-                    DATABASE_ID,
-                    REACTIONS_COLLECTION_ID,
-                    ID.unique(),
-                    {
-                        room_id: roomId,
-                        emoji: emoji,
-                        sender: userName,
-                        timestamp: new Date().toISOString()
-                    }
-                );
-
-                showReactionAnimation(emoji);
-            } catch (error) {
-                showError('Failed to send reaction: ' + error.message);
+        // Character Theme Functions
+        const characterThemes = {
+            jinx: {
+                primary: '#00ffff',
+                secondary: '#ff1493',
+                quotes: ["You're perfect now.", "I'm crazy! Got a doctor's note."]
+            },
+            ekko: {
+                primary: '#7cba3d',
+                secondary: '#ffffff',
+                quotes: ["Every mistake is a lesson.", "Time to make history!"]
+            },
+            silco: {
+                primary: '#32cd32',
+                secondary: '#191970',
+                quotes: ["We will show them all.", "Nothing will ever keep us apart."]
+            },
+            vi: {
+                primary: '#ff69b4',
+                secondary: '#8a2be2',
+                quotes: ["I can handle myself.", "We'll show them. We'll show them all."]
+            },
+            caitlyn: {
+                primary: '#4169e1',
+                secondary: '#191970',
+                quotes: ["I'm on the case.", "Sometimes the only way to help people is to fight."]
             }
-        }
+        };
 
-        function showReactionAnimation(emoji) {
-            const reaction = document.createElement('div');
-            reaction.className = 'floating-reaction';
-            reaction.textContent = emoji;
-            reaction.style.left = `${Math.random() * 80 + 10}%`;
-            document.body.appendChild(reaction);
-            setTimeout(() => reaction.remove(), 1000);
+        function setCharacterTheme(character) {
+            // Remove existing background classes
+            document.body.classList.remove('jinx-bg', 'ekko-bg', 'silco-bg', 'vi-bg', 'caitlyn-bg');
+            
+            // Add new background class
+            document.body.classList.add(`${character}-bg`);
+            
+            // Update color scheme
+            const theme = characterThemes[character];
+            const root = document.documentElement;
+            root.style.setProperty('--primary-color', theme.primary);
+            root.style.setProperty('--secondary-color', theme.secondary);
+            
+            // Show random quote
+            const quotes = theme.quotes;
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            showQuote(randomQuote);
+            
+            showSuccess(`Theme changed to ${character}`);
         }
 
         // UI Functions
@@ -488,22 +520,16 @@
             loadChatHistory();
         }
 
-        function toggleTheme() {
-            const root = document.documentElement;
-            const isDark = getComputedStyle(root).getPropertyValue('--background-color').trim() === '#121212';
-            
-            if (isDark) {
-                root.style.setProperty('--background-color', '#ffffff');
-                root.style.setProperty('--surface-color', '#f5f5f5');
-                root.style.setProperty('--text-color', '#000000');
-            } else {
-                root.style.setProperty('--background-color', '#121212');
-                root.style.setProperty('--surface-color', '#1e1e1e');
-                root.style.setProperty('--text-color', '#ffffff');
-            }
+        function showQuote(quote) {
+            Toastify({
+                text: quote,
+                duration: 3000,
+                gravity: "top",
+                position: 'center',
+                backgroundColor: "var(--primary-color)",
+            }).showToast();
         }
 
-        // Utility Functions
         function showSuccess(message) {
             Toastify({
                 text: message,
@@ -528,12 +554,6 @@
             return new Date(timestamp).toLocaleTimeString();
         }
 
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
         function escapeHtml(unsafe) {
             return unsafe
                 .replace(/&/g, "&amp;")
@@ -541,50 +561,6 @@
                 .replace(/>/g, "&gt;")
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
-        }
-
-        async function loadChatHistory() {
-            try {
-                const response = await databases.listDocuments(
-                    DATABASE_ID,
-                    MESSAGES_COLLECTION_ID,
-                    [
-                        Query.equal('room_id', roomId),
-                        Query.orderAsc('timestamp')
-                    ]
-                );
-
-                response.documents.forEach(message => {
-                    handleNewMessage(message);
-                });
-            } catch (error) {
-                showError('Failed to load chat history: ' + error.message);
-            }
-        }
-
-        function handleNewMessage(message) {
-            const chatBox = document.getElementById('chatBox');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.sender === userName ? 'sent' : 'received'}`;
-
-            if (message.type === 'file') {
-                messageDiv.innerHTML = `
-                    <span class="sender">${escapeHtml(message.sender)}</span>
-                    <a href="${message.content.url}" target="_blank" class="file-link">
-                        📎 ${escapeHtml(message.content.name)} (${formatFileSize(message.content.size)})
-                    </a>
-                    <span class="timestamp">${formatTimestamp(message.timestamp)}</span>
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <span class="sender">${escapeHtml(message.sender)}</span>
-                    <span class="content">${escapeHtml(message.content)}</span>
-                    <span class="timestamp">${formatTimestamp(message.timestamp)}</span>
-                `;
-            }
-
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
         }
     </script>
 </body>
