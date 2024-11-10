@@ -6,640 +6,307 @@
     <title>Arcane Watch Party</title>
     
     <!-- External Dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@11.0.0"></script>
     <script src="https://unpkg.com/simple-peer@9.11.0/simplepeer.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastify-js/1.11.2/toastify.min.js"></script>
 
-    <!-- Initialize Supabase -->
-    <script>
-        const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-        const supabaseKey = process.env.REACT_APP_ANON_KEY;
-        const supabase = createClient(supabaseUrl, supabaseKey);
-    </script>
-
-    <!-- Your existing styles here -->
     <style>
-        /* Reset and Base Styles */
         :root {
-            --primary-color: #ff0000;
-            --background-color: #000000;
+            --primary-color: #7e57c2;
+            --secondary-color: #b085f5;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
             --text-color: #ffffff;
-            --accent-color: rgba(255, 0, 0, 0.5);
-            --overlay-bg: rgba(0, 0, 0, 0.8);
-            --border-radius-sm: 4px;
-            --border-radius-md: 8px;
-            --border-radius-lg: 10px;
-            --spacing-xs: 5px;
-            --spacing-sm: 10px;
-            --spacing-md: 15px;
-            --spacing-lg: 20px;
-
-            /* Character Theme Colors */
-            --jinx-primary: #ff69b4;
-            --vi-primary: #9370db;
-            --caitlyn-primary: #4169e1;
-            --ekko-primary: #32cd32;
-            --silco-primary: #dc143c;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            --error-color: #cf6679;
+            --success-color: #03dac6;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
         }
 
         body {
-            background: var(--background-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* Initial Forms */
-        .initial-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: var(--spacing-lg);
-            background: var(--background-color);
-        }
-
-        .forms-wrapper {
-            background: var(--overlay-bg);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-lg);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: var(--spacing-md);
-            justify-content: center;
-        }
-
-        .button-group button {
-            padding: var(--spacing-md) var(--spacing-lg);
-            border: none;
-            border-radius: var(--border-radius-md);
-            background: var(--primary-color);
-            color: var(--text-color);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .button-group button:hover {
-            transform: scale(1.05);
-        }
-
-        .form-slide {
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .animated-form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-xs);
-        }
-
-        .input-group input,
-        .input-group select {
-            padding: var(--spacing-sm);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--border-radius-sm);
-            background: rgba(255, 255, 255, 0.1);
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
             color: var(--text-color);
         }
 
-        /* Layout */
         .container {
-            display: grid;
-            grid-template-columns: 250px 1fr 300px;
-            gap: var(--spacing-lg);
-            padding: var(--spacing-lg);
+            display: none;
+            grid-template-columns: 1fr 300px;
             height: 100vh;
-            max-width: 1800px;
-            margin: 0 auto;
-        }
-
-        /* Video Section */
-        .video-section {
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-lg);
-            display: flex;
-            flex-direction: column;
             gap: var(--spacing-md);
-        }
-
-        .video-player {
-            aspect-ratio: 16/9;
-            background: #000;
-            border-radius: var(--border-radius-md);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .video-player video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Playback Controls */
-        .playback-controls {
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-lg);
             padding: var(--spacing-md);
+        }
+
+        .video-container {
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: var(--spacing-md);
+        }
+
+        .chat-container {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-sm);
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: var(--spacing-md);
         }
 
-        .primary-controls,
-        .secondary-controls,
-        .volume-controls {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            padding: var(--spacing-xs);
-        }
-
-        .control-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            border-radius: var(--border-radius-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .control-btn:hover {
-            background: var(--accent-color);
-            transform: scale(1.05);
-        }
-
-        /* Chat Section */
-        .chat-section {
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-lg);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .chat-box {
+        #chatBox {
             flex-grow: 1;
             overflow-y: auto;
+            margin-bottom: var(--spacing-md);
             padding: var(--spacing-md);
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-sm);
         }
 
-        /* Messages */
         .message {
-            max-width: 85%;
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--spacing-md);
-            word-break: break-word;
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-sm);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            word-wrap: break-word;
         }
 
         .message.sent {
-            background: var(--accent-color);
-            align-self: flex-end;
+            background: var(--primary-color);
+            margin-left: 20%;
         }
 
         .message.received {
             background: rgba(255, 255, 255, 0.1);
-            align-self: flex-start;
+            margin-right: 20%;
         }
 
-        /* Animations */
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .sender {
+            font-weight: bold;
+            font-size: 0.9em;
+            display: block;
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        .timestamp {
+            font-size: 0.8em;
+            opacity: 0.7;
+            display: block;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr 300px;
-            }
+        .input-container {
+            display: flex;
+            gap: var(--spacing-sm);
         }
 
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-                padding: var(--spacing-sm);
-            }
-
-            .chat-section {
-                height: 400px;
-            }
-        }
-
-        /* Emoji Picker Styles */
-        .emoji-picker {
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-md);
+        #messageInput {
+            flex-grow: 1;
             padding: var(--spacing-sm);
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-xs);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        .emoji-picker span {
-            cursor: pointer;
-            padding: var(--spacing-xs);
-            text-align: center;
-            transition: transform 0.2s;
-        }
-
-        .emoji-picker span:hover {
-            transform: scale(1.2);
-        }
-
-        .emoji-button {
-            background: none;
             border: none;
-            font-size: 1.2em;
-            cursor: pointer;
-            padding: var(--spacing-xs);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
         }
 
-        /* Reactions */
-        .reaction-bar {
+        button {
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 4px;
+            padding: var(--spacing-sm) var(--spacing-md);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: var(--secondary-color);
+        }
+
+        #initialForms {
             display: flex;
             justify-content: center;
-            gap: var(--spacing-sm);
+            align-items: center;
+            height: 100vh;
+            gap: var(--spacing-lg);
+        }
+
+        .form-container {
+            background: var(--surface-color);
+            padding: var(--spacing-lg);
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .form-container h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        input {
+            width: 100%;
             padding: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            border: none;
+            border-radius: 4px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            color: var(--text-color);
+        }
+
+        .reactions {
+            display: flex;
+            gap: var(--spacing-sm);
             margin-top: var(--spacing-sm);
         }
 
         .reaction-btn {
             background: none;
             border: none;
-            color: var(--text-color);
+            font-size: 1.5em;
             cursor: pointer;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            transition: all 0.3s;
+            padding: 4px;
+            transition: transform 0.2s;
         }
 
         .reaction-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.1);
+            transform: scale(1.2);
         }
 
         .floating-reaction {
-            position: absolute;
-            bottom: 20px;
-            font-size: 2em;
-            animation: floatUp 1s ease-out forwards;
+            position: fixed;
+            animation: float 1s ease-out forwards;
             pointer-events: none;
+            font-size: 2em;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
         }
 
-        .quick-action-btn {
-            background: rgba(255, 255, 255, 0.1);
+        .theme-toggle {
+            position: fixed;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            background: none;
             border: none;
             color: var(--text-color);
-            padding: var(--spacing-sm);
-            border-radius: 50%;
             cursor: pointer;
-            transition: all 0.3s;
+            font-size: 1.5em;
         }
 
-        .quick-action-btn:hover {
-            background: var(--accent-color);
-            transform: scale(1.1);
+        .file-upload button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: var(--spacing-sm);
         }
 
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-        }
-
-        /* Character Background Themes */
-        .theme-jinx {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/jinx-bg.jpg');
-            --primary-color: var(--jinx-primary);
-        }
-
-        .theme-vi {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/vi-bg.jpg');
-            --primary-color: var(--vi-primary);
-        }
-
-        .theme-caitlyn {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/caitlyn-bg.jpg');
-            --primary-color: var(--caitlyn-primary);
-        }
-
-        .theme-ekko {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/ekko-bg.jpg');
-            --primary-color: var(--ekko-primary);
-        }
-
-        .theme-silco {
-            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                url('https://raw.githubusercontent.com/yourusername/arcane-watch/main/assets/silco-bg.jpg');
-            --primary-color: var(--silco-primary);
-        }
-
-        /* Theme Selector Styles */
-        .theme-selector {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--overlay-bg);
-            border-radius: var(--border-radius-lg);
-            padding: var(--spacing-md);
-            z-index: 1000;
-        }
-
-        .theme-option {
+        .file-link {
+            color: var(--primary-color);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            cursor: pointer;
-            border-radius: var(--border-radius-sm);
-            transition: all 0.3s;
         }
 
-        .theme-option:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .theme-option img {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .theme-option.active {
-            background: var(--primary-color);
+        #adminControls {
+            display: none;
+            margin-top: var(--spacing-md);
         }
     </style>
 </head>
 <body>
-    <!-- Initial Forms Container -->
-    <div id="initialForms" class="initial-container">
-        <div class="forms-wrapper">
-            <div id="initialButtons" class="button-group">
-                <button class="create-room-btn">Create Room</button>
-                <button class="join-room-btn">Join Room</button>
-            </div>
+    <div id="initialForms">
+        <div class="form-container">
+            <h2>Create Room</h2>
+            <form id="createRoomForm">
+                <input type="text" id="newUserName" placeholder="Your Name" required>
+                <input type="text" id="newMeetingName" placeholder="Room Name" required>
+                <input type="password" id="newRoomPassword" placeholder="Room Password" required>
+                <button type="submit">Create Room</button>
+            </form>
+        </div>
 
-            <!-- Create Room Form -->
-            <div id="createRoomForm" class="form-slide" style="display: none;">
-                <h3>Create New Room</h3>
-                <form id="createRoomFormElement" class="animated-form">
-                    <div class="input-group">
-                        <input type="text" id="newUserName" placeholder="Your Display Name" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="text" id="newMeetingName" placeholder="Meeting Name" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="password" id="newRoomPassword" placeholder="Room Password" required>
-                    </div>
-                    <button type="submit">Create Room</button>
-                    <button type="button" class="back-btn">Back</button>
-                </form>
-            </div>
-
-            <!-- Join Room Form -->
-            <div id="joinRoomForm" class="form-slide" style="display: none;">
-                <h3>Join Existing Room</h3>
-                <form id="joinRoomFormElement" class="animated-form">
-                    <div class="input-group">
-                        <input type="text" id="userName" placeholder="Your Display Name" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="text" id="meetingName" placeholder="Meeting Name" required>
-                    </div>
-                    <div class="input-group">
-                        <input type="password" id="roomPassword" placeholder="Room Password" required>
-                    </div>
-                    <button type="submit">Join Room</button>
-                    <button type="button" class="back-btn">Back</button>
-                </form>
-            </div>
+        <div class="form-container">
+            <h2>Join Room</h2>
+            <form id="joinRoomForm">
+                <input type="text" id="userName" placeholder="Your Name" required>
+                <input type="text" id="meetingName" placeholder="Room Name" required>
+                <input type="password" id="roomPassword" placeholder="Room Password" required>
+                <button type="submit">Join Room</button>
+            </form>
         </div>
     </div>
 
-    <!-- Theme Selector -->
-    <div class="theme-selector">
-        <h3>Choose Character Theme</h3>
-        <div class="theme-option" onclick="setTheme('jinx')">
-            <img src="jinx.png" alt="Jinx">
-            <span>Jinx</span>
-        </div>
-        <div class="theme-option" onclick="setTheme('xi')">
-            <img src="xi.jpg" alt="xi">
-            <span>xi</span>
-        </div>
-        <div class="theme-option" onclick="setTheme('caitlyn')">
-            <img src="caitlyn.jpg" alt="Caitlyn">
-            <span>Caitlyn</span>
-        </div>
-        <div class="theme-option" onclick="setTheme('ekko')">
-            <img src="ekko.jpg" alt="Ekko">
-            <span>Ekko</span>
-        </div>
-        <div class="theme-option" onclick="setTheme('silco')">
-            <img src="silco.webp" alt="Silco">
-            <span>Silco</span>
-        </div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="container" style="display: none;">
-        <!-- Your existing container content -->
-        <div class="video-section">
-            <div id="videoPlayer" class="video-player"></div>
-            <div class="playback-controls">
-                <div class="primary-controls">
-                    <button onclick="videoControls.play()" class="control-btn">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button onclick="videoControls.pause()" class="control-btn">
-                        <i class="fas fa-pause"></i>
-                    </button>
-                    <input type="range" id="timelineSlider" min="0" max="100" value="0">
-                    <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
-                </div>
-                
-                <div class="secondary-controls">
-                    <button onclick="videoControls.seek(videoElement.currentTime - 10)" class="control-btn">
-                        <i class="fas fa-backward"></i> 10s
-                    </button>
-                    <select onchange="videoControls.setPlaybackSpeed(this.value)">
-                        <option value="0.5">0.5x</option>
-                        <option value="1" selected>1x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2x</option>
-                    </select>
-                    <button onclick="videoControls.seek(videoElement.currentTime + 10)" class="control-btn">
-                        10s <i class="fas fa-forward"></i>
-                    </button>
-                </div>
-
-                <div class="volume-controls">
-                    <i class="fas fa-volume-up"></i>
-                    <input type="range" 
-                           onchange="videoControls.setVolume(this.value)" 
-                           min="0" max="1" step="0.1" value="1">
-                    <button onclick="videoControls.toggleMute()" class="control-btn">
-                        <i class="fas fa-volume-mute"></i>
-                    </button>
-                </div>
+    <div class="container">
+        <div class="video-container">
+            <video id="localVideo" autoplay muted></video>
+            <div id="remoteVideos"></div>
+            <div id="adminControls">
+                <button onclick="toggleMute()">Toggle Mute</button>
+                <button onclick="toggleVideo()">Toggle Video</button>
             </div>
         </div>
 
-        <div class="chat-section">
-            <div id="chatBox" class="chat-box"></div>
-            <div class="message-input-container">
+        <div class="chat-container">
+            <div id="chatBox"></div>
+            <div class="reactions">
+                <button class="reaction-btn" onclick="sendReaction('👍')">👍</button>
+                <button class="reaction-btn" onclick="sendReaction('❤️')">❤️</button>
+                <button class="reaction-btn" onclick="sendReaction('😂')">😂</button>
+                <button class="reaction-btn" onclick="sendReaction('😮')">😮</button>
+                <button class="reaction-btn" onclick="sendReaction('👏')">👏</button>
+            </div>
+            <div class="input-container">
                 <input type="text" id="messageInput" placeholder="Type a message...">
+                <div class="file-upload">
+                    <input type="file" id="fileInput" style="display: none;">
+                    <button onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                </div>
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
 
-    <!-- Main JavaScript -->
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
     <script>
+        // Initialize Appwrite with your IDs
+        const client = new Appwrite();
+        client
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('672fc0e90039900958a6');
+
+        // Initialize services
+        const databases = new Appwrite.Databases(client);
+        const storage = new Appwrite.Storage(client);
+
+        // Your provided IDs
+        const DATABASE_ID = '672fc3900004496acb05';
+        const ROOMS_COLLECTION_ID = '672fc3c2000ad4fdc148';
+        const MESSAGES_COLLECTION_ID = '672fc5a3001ba8defed8';
+        const REACTIONS_COLLECTION_ID = '67303c86002e4a6021a2';
+        const STORAGE_BUCKET_ID = '6730400800147945b7ac';
+
         // Global Variables
         let roomId;
         let userName;
         let isAdmin = false;
-        let peerConnections = {};
-        let screenStream = null;
-        let videoElement = null;
-        let isScreenSharing = false;
-        let currentTheme = 'default';
-        let chatChannel;
-        let videoStateChannel;
 
-        const characterImages = {
-            backgrounds: {
-                jinx: 'jinx.png',
-                vi: 'vi.jpg',
-                caitlyn: 'caitlyn.jpg',
-                ekko: 'ekko.jpg',
-                silco: 'silco.webp'
-            },
-            avatars: {
-                jinx: 'jinx.jpg',
-                vi: 'vi.jpg',
-                caitlyn: 'caitlyn.jpg',
-                ekko: 'ekko.jpg',
-                silco: 'silco.webp'
-            }
-        };
-
-        // Wait for DOM to be fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded');
-            
-            // Get button elements
-            const createRoomBtn = document.querySelector('.create-room-btn');
-            const joinRoomBtn = document.querySelector('.join-room-btn');
-            const backBtns = document.querySelectorAll('.back-btn');
-            const createRoomForm = document.getElementById('createRoomFormElement');
-            const joinRoomForm = document.getElementById('joinRoomFormElement');
-
-            // Debug log elements
-            console.log('Elements found:', {
-                createRoomBtn,
-                joinRoomBtn,
-                backBtns,
-                createRoomForm,
-                joinRoomForm
-            });
-
-            // Add click event listeners
-            if(createRoomBtn) {
-                createRoomBtn.addEventListener('click', function() {
-                    console.log('Create Room button clicked');
-                    document.getElementById('initialButtons').style.display = 'none';
-                    document.getElementById('createRoomForm').style.display = 'block';
-                });
-            }
-
-            if(joinRoomBtn) {
-                joinRoomBtn.addEventListener('click', function() {
-                    console.log('Join Room button clicked');
-                    document.getElementById('initialButtons').style.display = 'none';
-                    document.getElementById('joinRoomForm').style.display = 'block';
-                });
-            }
-
-            // Add event listeners to all back buttons
-            backBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    console.log('Back button clicked');
-                    document.getElementById('initialButtons').style.display = 'flex';
-                    document.getElementById('createRoomForm').style.display = 'none';
-                    document.getElementById('joinRoomForm').style.display = 'none';
-                });
-            });
-
-            // Form submit handlers
-            if(createRoomForm) {
-                createRoomForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    console.log('Create Room form submitted');
-                    await handleCreateRoom(e);
-                });
-            }
-
-            if(joinRoomForm) {
-                joinRoomForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    console.log('Join Room form submitted');
-                    await handleJoinRoom(e);
-                });
-            }
-        });
+        // Event Listeners
+        document.getElementById('createRoomForm').addEventListener('submit', handleCreateRoom);
+        document.getElementById('joinRoomForm').addEventListener('submit', handleJoinRoom);
+        document.getElementById('messageInput').addEventListener('keypress', handleMessageKeyPress);
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
 
         // Room Management Functions
         async function handleCreateRoom(event) {
@@ -649,22 +316,22 @@
                 const roomName = document.getElementById('newMeetingName').value;
                 const password = document.getElementById('newRoomPassword').value;
 
-                const { data, error } = await supabase
-                    .from('rooms')
-                    .insert([{
+                const document = await databases.createDocument(
+                    DATABASE_ID,
+                    ROOMS_COLLECTION_ID,
+                    ID.unique(),
+                    {
                         name: roomName,
                         password: password,
                         admin_name: userName,
                         created_at: new Date().toISOString()
-                    }])
-                    .select()
-                    .single();
+                    }
+                );
 
-                if (error) throw error;
-
-                roomId = data.id;
+                roomId = document.$id;
                 isAdmin = true;
                 enterRoom();
+                showSuccess('Room created successfully!');
             } catch (error) {
                 showError('Failed to create room: ' + error.message);
             }
@@ -677,196 +344,52 @@
                 const roomName = document.getElementById('meetingName').value;
                 const password = document.getElementById('roomPassword').value;
 
-                const { data, error } = await supabase
-                    .from('rooms')
-                    .select()
-                    .eq('name', roomName)
-                    .eq('password', password)
-                    .single();
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    ROOMS_COLLECTION_ID,
+                    [
+                        Query.equal('name', roomName),
+                        Query.equal('password', password)
+                    ]
+                );
 
-                if (error) throw new Error('Invalid room name or password');
+                if (response.documents.length === 0) {
+                    throw new Error('Invalid room name or password');
+                }
 
-                roomId = data.id;
-                isAdmin = data.admin_name === userName;
+                roomId = response.documents[0].$id;
+                isAdmin = response.documents[0].admin_name === userName;
                 enterRoom();
+                showSuccess('Joined room successfully!');
             } catch (error) {
                 showError('Failed to join room: ' + error.message);
             }
         }
 
-        function enterRoom() {
-            document.getElementById('initialForms').style.display = 'none';
-            document.querySelector('.container').style.display = 'grid';
-            if (isAdmin) {
-                document.getElementById('adminControls').style.display = 'block';
-            }
-            initializeRoom();
-        }
-
-        // Utility Functions
-        function showError(message) {
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#ff4444",
-            }).showToast();
-        }
-
-        function showSuccess(message) {
-            Toastify({
-                text: message,
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "#44ff44",
-            }).showToast();
-        }
-
-        // Initialize Room
-        async function initializeRoom() {
-            try {
-                setupVideoPlayer();
-                setupChat();
-                setupEmojiPicker();
-                setupReactions();
-                setupQuickActions();
-                showSuccess('Room initialized successfully');
-            } catch (error) {
-                showError('Failed to initialize room: ' + error.message);
-            }
-        }
-
-        // Add error handling
-        window.addEventListener('error', function(e) {
-            console.error('Global error:', e.error);
-            showError('An unexpected error occurred');
-        });
-
-        // Video Controls
-        function setupVideoPlayer() {
-            videoElement = document.createElement('video');
-            videoElement.id = 'mainVideo';
-            document.getElementById('videoPlayer').appendChild(videoElement);
-            
-            // Add video event listeners
-            videoElement.addEventListener('loadedmetadata', () => {
-                document.getElementById('duration').textContent = formatTime(videoElement.duration);
-            });
-
-            videoElement.addEventListener('timeupdate', () => {
-                document.getElementById('currentTime').textContent = formatTime(videoElement.currentTime);
-                document.getElementById('timelineSlider').value = 
-                    (videoElement.currentTime / videoElement.duration) * 100;
-            });
-
-            // Initialize controls
-            setupVideoControls();
-        }
-
-        const videoControls = {
-            play: async function() {
-                if (videoElement) {
-                    await videoElement.play();
-                    broadcastVideoState('play');
-                }
-            },
-
-            pause: async function() {
-                if (videoElement) {
-                    videoElement.pause();
-                    broadcastVideoState('pause');
-                }
-            },
-
-            seek: function(time) {
-                if (videoElement) {
-                    videoElement.currentTime = time;
-                    broadcastVideoState('seek', time);
-                }
-            },
-
-            setVolume: function(volume) {
-                if (videoElement) {
-                    videoElement.volume = volume;
-                }
-            },
-
-            setPlaybackSpeed: function(speed) {
-                if (videoElement) {
-                    videoElement.playbackRate = speed;
-                    broadcastVideoState('speed', speed);
-                }
-            },
-
-            toggleMute: function() {
-                if (videoElement) {
-                    videoElement.muted = !videoElement.muted;
-                }
-            },
-
-            takeSnapshot: function() {
-                if (!videoElement) return;
-                
-                const canvas = document.createElement('canvas');
-                canvas.width = videoElement.videoWidth;
-                canvas.height = videoElement.videoHeight;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(videoElement, 0, 0);
-                
-                const link = document.createElement('a');
-                link.download = 'snapshot.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            }
-        };
-
-        // Screen Sharing
-        async function startScreenShare() {
-            try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: true,
-                    audio: true
-                });
-                videoElement.srcObject = screenStream;
-                document.getElementById('startScreenShare').style.display = 'none';
-                document.getElementById('stopScreenShare').style.display = 'block';
-                isScreenSharing = true;
-                showSuccess('Screen sharing started');
-            } catch (error) {
-                showError('Failed to start screen sharing: ' + error.message);
-            }
-        }
-
-        function stopScreenShare() {
-            if (screenStream) {
-                screenStream.getTracks().forEach(track => track.stop());
-                screenStream = null;
-                videoElement.srcObject = null;
-                document.getElementById('startScreenShare').style.display = 'block';
-                document.getElementById('stopScreenShare').style.display = 'none';
-                isScreenSharing = false;
-                showSuccess('Screen sharing stopped');
-            }
-        }
-
         // Chat Functions
         function setupChat() {
-            const messageInput = document.getElementById('messageInput');
-            const chatBox = document.getElementById('chatBox');
-
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            client.subscribe(`databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`, 
+                response => {
+                    if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+                        handleNewMessage(response.payload);
+                    }
                 }
-            });
+            );
 
-            // Initialize emoji picker
-            setupEmojiPicker();
+            client.subscribe(`databases.${DATABASE_ID}.collections.${REACTIONS_COLLECTION_ID}.documents`, 
+                response => {
+                    if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+                        handleNewReaction(response.payload);
+                    }
+                }
+            );
+        }
+
+        async function handleMessageKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                await sendMessage();
+            }
         }
 
         async function sendMessage(content = null, type = 'text') {
@@ -876,185 +399,68 @@
                 
                 if (!messageContent) return;
 
-                await chatChannel.send({
-                    type: 'broadcast',
-                    event: 'message',
-                    payload: {
-                        type,
+                await databases.createDocument(
+                    DATABASE_ID,
+                    MESSAGES_COLLECTION_ID,
+                    ID.unique(),
+                    {
+                        room_id: roomId,
+                        type: type,
                         content: messageContent,
                         sender: userName,
                         timestamp: new Date().toISOString()
                     }
-                });
+                );
 
                 if (type === 'text') {
                     messageInput.value = '';
                 }
-
-                showSuccess('Message sent');
             } catch (error) {
                 showError('Failed to send message: ' + error.message);
             }
         }
 
-        function handleNewMessage(payload) {
-            const { type, content, sender, timestamp } = payload;
-            const chatBox = document.getElementById('chatBox');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender === userName ? 'sent' : 'received'}`;
+        // File Handling
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            try {
+                const uploadedFile = await storage.createFile(
+                    STORAGE_BUCKET_ID,
+                    ID.unique(),
+                    file
+                );
 
-            switch (type) {
-                case 'text':
-                    messageDiv.innerHTML = `
-                        <span class="sender">${sender}</span>
-                        <span class="content">${escapeHtml(content)}</span>
-                        <span class="timestamp">${formatTimestamp(timestamp)}</span>
-                    `;
-                    break;
-                case 'file':
-                    messageDiv.innerHTML = `
-                        <span class="sender">${sender}</span>
-                        <a href="${content.url}" target="_blank" class="file-link">
-                            📎 ${escapeHtml(content.name)} (${formatFileSize(content.size)})
-                        </a>
-                        <span class="timestamp">${formatTimestamp(timestamp)}</span>
-                    `;
-                    break;
+                const fileUrl = storage.getFileView(
+                    STORAGE_BUCKET_ID,
+                    uploadedFile.$id
+                );
+
+                await sendMessage({
+                    url: fileUrl,
+                    name: file.name,
+                    size: file.size
+                }, 'file');
+
+                showSuccess('File shared successfully');
+            } catch (error) {
+                showError('File upload failed: ' + error.message);
             }
-
-            chatBox.appendChild(messageDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        // File Sharing
-        async function handleFileShare(event) {
-            const files = event.target.files || event.dataTransfer.files;
-            
-            for (const file of files) {
-                try {
-                    const { data, error } = await supabase.storage
-                        .from('shared-files')
-                        .upload(`${roomId}/${file.name}`, file);
-
-                    if (error) throw error;
-
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('shared-files')
-                        .getPublicUrl(`${roomId}/${file.name}`);
-
-                    await sendMessage({
-                        url: publicUrl,
-                        name: file.name,
-                        size: file.size
-                    }, 'file');
-
-                    showSuccess('File shared successfully');
-                } catch (error) {
-                    showError(`Failed to share file: ${error.message}`);
-                }
-            }
-        }
-
-        // Utility Functions
-        function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            seconds = Math.floor(seconds % 60);
-            return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function formatTimestamp(timestamp) {
-            return new Date(timestamp).toLocaleTimeString();
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // Emoji Picker Setup
-        function setupEmojiPicker() {
-            const emojiButton = document.createElement('button');
-            emojiButton.className = 'emoji-button';
-            emojiButton.innerHTML = '😊';
-            emojiButton.onclick = toggleEmojiPicker;
-
-            const messageInputContainer = document.querySelector('.message-input-container');
-            messageInputContainer.insertBefore(emojiButton, messageInputContainer.firstChild);
-
-            // Create emoji picker container
-            const emojiPicker = document.createElement('div');
-            emojiPicker.id = 'emojiPicker';
-            emojiPicker.className = 'emoji-picker';
-            emojiPicker.style.display = 'none';
-            
-            // Add common emojis
-            const commonEmojis = ['😊', '😂', '❤️', '👍', '😎', '🎉', '🔥', '😢', '🤔', '😍', 
-                                '👋', '🙌', '👏', '🎮', '🍿', '🎬', '⏰', '⭐', '🎵', '💬'];
-            
-            commonEmojis.forEach(emoji => {
-                const emojiSpan = document.createElement('span');
-                emojiSpan.textContent = emoji;
-                emojiSpan.onclick = () => addEmoji(emoji);
-                emojiPicker.appendChild(emojiSpan);
-            });
-
-            messageInputContainer.appendChild(emojiPicker);
-        }
-
-        function toggleEmojiPicker() {
-            const picker = document.getElementById('emojiPicker');
-            picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
-        }
-
-        function addEmoji(emoji) {
-            const messageInput = document.getElementById('messageInput');
-            messageInput.value += emoji;
-            messageInput.focus();
         }
 
         // Reactions System
-        function setupReactions() {
-            const reactionBar = document.createElement('div');
-            reactionBar.className = 'reaction-bar';
-            
-            const reactions = ['👍', '❤️', '😂', '😮', '😢', '👏'];
-            
-            reactions.forEach(reaction => {
-                const button = document.createElement('button');
-                button.className = 'reaction-btn';
-                button.innerHTML = `${reaction} <span class="reaction-count">0</span>`;
-                button.onclick = () => sendReaction(reaction);
-                reactionBar.appendChild(button);
-            });
-
-            document.querySelector('.video-section').appendChild(reactionBar);
-        }
-
         async function sendReaction(emoji) {
             try {
-                const reaction = {
-                    emoji,
-                    sender: userName,
-                    timestamp: new Date().toISOString()
-                };
-
-                await chatChannel.send({
-                    type: 'broadcast',
-                    event: 'reaction',
-                    payload: reaction
-                });
+                await databases.createDocument(
+                    DATABASE_ID,
+                    REACTIONS_COLLECTION_ID,
+                    ID.unique(),
+                    {
+                        room_id: roomId,
+                        emoji: emoji,
+                        sender: userName,
+                        timestamp: new Date().toISOString()
+                    }
+                );
 
                 showReactionAnimation(emoji);
             } catch (error) {
@@ -1066,161 +472,120 @@
             const reaction = document.createElement('div');
             reaction.className = 'floating-reaction';
             reaction.textContent = emoji;
-            
-            const videoPlayer = document.querySelector('.video-player');
-            videoPlayer.appendChild(reaction);
-
-            // Random position from bottom
-            const startX = Math.random() * (videoPlayer.offsetWidth - 50);
-            reaction.style.left = `${startX}px`;
-
-            // Animate and remove
+            reaction.style.left = `${Math.random() * 80 + 10}%`;
+            document.body.appendChild(reaction);
             setTimeout(() => reaction.remove(), 1000);
         }
 
-        // Quick Actions Menu
-        function setupQuickActions() {
-            const quickActions = document.createElement('div');
-            quickActions.className = 'quick-actions';
+        // UI Functions
+        function enterRoom() {
+            document.getElementById('initialForms').style.display = 'none';
+            document.querySelector('.container').style.display = 'grid';
+            if (isAdmin) {
+                document.getElementById('adminControls').style.display = 'block';
+            }
+            setupChat();
+            loadChatHistory();
+        }
+
+        function toggleTheme() {
+            const root = document.documentElement;
+            const isDark = getComputedStyle(root).getPropertyValue('--background-color').trim() === '#121212';
             
-            const actions = [
-                { icon: 'fa-camera', label: 'Screenshot', action: videoControls.takeSnapshot },
-                { icon: 'fa-external-link-alt', label: 'PiP', action: togglePiP },
-                { icon: 'fa-closed-captioning', label: 'CC', action: toggleCaptions },
-                { icon: 'fa-expand', label: 'Fullscreen', action: toggleFullscreen }
-            ];
-
-            actions.forEach(({ icon, label, action }) => {
-                const button = document.createElement('button');
-                button.className = 'quick-action-btn';
-                button.innerHTML = `<i class="fas ${icon}"></i>`;
-                button.title = label;
-                button.onclick = action;
-                quickActions.appendChild(button);
-            });
-
-            document.querySelector('.video-section').appendChild(quickActions);
-        }
-
-        // Picture in Picture
-        async function togglePiP() {
-            try {
-                if (document.pictureInPictureElement) {
-                    await document.exitPictureInPicture();
-                } else if (document.pictureInPictureEnabled) {
-                    await videoElement.requestPictureInPicture();
-                }
-            } catch (error) {
-                showError('PiP failed: ' + error.message);
+            if (isDark) {
+                root.style.setProperty('--background-color', '#ffffff');
+                root.style.setProperty('--surface-color', '#f5f5f5');
+                root.style.setProperty('--text-color', '#000000');
+            } else {
+                root.style.setProperty('--background-color', '#121212');
+                root.style.setProperty('--surface-color', '#1e1e1e');
+                root.style.setProperty('--text-color', '#ffffff');
             }
         }
 
-        // Captions
-        async function toggleCaptions() {
-            try {
-                if (videoElement.textTracks.length === 0) {
-                    const track = videoElement.addTextTrack('captions', 'English', 'en');
-                    track.mode = 'showing';
-                } else {
-                    const track = videoElement.textTracks[0];
-                    track.mode = track.mode === 'showing' ? 'hidden' : 'showing';
-                }
-            } catch (error) {
-                showError('Caption toggle failed: ' + error.message);
-            }
-        }
-
-        // Fullscreen
-        function toggleFullscreen() {
-            try {
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                } else {
-                    const videoContainer = document.querySelector('.video-section');
-                    videoContainer.requestFullscreen();
-                }
-            } catch (error) {
-                showError('Fullscreen toggle failed: ' + error.message);
-            }
-        }
-
-        // Theme Management
-        const themes = {
-            jinx: {
-                primary: '#ff69b4',
-                background: '#000000',
-                text: '#ffffff',
-                characterName: 'Jinx',
-                quote: "I'm crazy! Got a doctor's note."
-            },
-            vi: {
-                primary: '#9370db',
-                background: '#000000',
-                text: '#ffffff',
-                characterName: 'Vi',
-                quote: "I can handle myself."
-            },
-            caitlyn: {
-                primary: '#4169e1',
-                background: '#000000',
-                text: '#ffffff',
-                characterName: 'Caitlyn',
-                quote: "I'm on the case."
-            },
-            ekko: {
-                primary: '#32cd32',
-                background: '#000000',
-                text: '#ffffff',
-                characterName: 'Ekko',
-                quote: "Time to make history."
-            },
-            silco: {
-                primary: '#dc143c',
-                background: '#000000',
-                text: '#ffffff',
-                characterName: 'Silco',
-                quote: "Loyalty. That's what matters."
-            }
-        };
-
-        function setTheme(themeName) {
-            // Remove all existing theme classes
-            document.body.classList.remove('theme-jinx', 'theme-vi', 'theme-caitlyn', 'theme-ekko', 'theme-silco');
-            
-            // Add new theme class
-            document.body.classList.add(`theme-${themeName}`);
-            
-            // Update theme variables
-            const theme = themes[themeName];
-            document.documentElement.style.setProperty('--primary-color', theme.primary);
-            document.documentElement.style.setProperty('--background-color', theme.background);
-            document.documentElement.style.setProperty('--text-color', theme.text);
-
-            // Update active state in theme selector
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            document.querySelector(`.theme-option[onclick="setTheme('${themeName}')"]`).classList.add('active');
-
-            // Show character quote
-            showCharacterQuote(theme.characterName, theme.quote);
-        }
-
-        function showCharacterQuote(character, quote) {
+        // Utility Functions
+        function showSuccess(message) {
             Toastify({
-                text: `${character}: "${quote}"`,
+                text: message,
                 duration: 3000,
                 gravity: "top",
-                position: "center",
-                backgroundColor: "var(--primary-color)",
-                className: "character-quote"
+                position: 'right',
+                backgroundColor: "var(--success-color)",
             }).showToast();
         }
 
-        // Initialize default theme
-        document.addEventListener('DOMContentLoaded', () => {
-            setTheme('jinx'); // Set default theme
-        });
+        function showError(message) {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "top",
+                position: 'right',
+                backgroundColor: "var(--error-color)",
+            }).showToast();
+        }
+
+        function formatTimestamp(timestamp) {
+            return new Date(timestamp).toLocaleTimeString();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        async function loadChatHistory() {
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    MESSAGES_COLLECTION_ID,
+                    [
+                        Query.equal('room_id', roomId),
+                        Query.orderAsc('timestamp')
+                    ]
+                );
+
+                response.documents.forEach(message => {
+                    handleNewMessage(message);
+                });
+            } catch (error) {
+                showError('Failed to load chat history: ' + error.message);
+            }
+        }
+
+        function handleNewMessage(message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.sender === userName ? 'sent' : 'received'}`;
+
+            if (message.type === 'file') {
+                messageDiv.innerHTML = `
+                    <span class="sender">${escapeHtml(message.sender)}</span>
+                    <a href="${message.content.url}" target="_blank" class="file-link">
+                        📎 ${escapeHtml(message.content.name)} (${formatFileSize(message.content.size)})
+                    </a>
+                    <span class="timestamp">${formatTimestamp(message.timestamp)}</span>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <span class="sender">${escapeHtml(message.sender)}</span>
+                    <span class="content">${escapeHtml(message.content)}</span>
+                    <span class="timestamp">${formatTimestamp(message.timestamp)}</span>
+                `;
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     </script>
 </body>
 </html>
